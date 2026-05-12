@@ -29,7 +29,6 @@
   
   #timer-board { font-size: 22px; color: #d32f2f; font-weight: bold; margin-bottom: 10px; background: #ffebee; padding: 8px; border-radius: 8px; border: 2px solid #ef5350; text-align: center;}
   
-  /* レイアウトガタつき防止 */
   #status-board { background: #333; color: #fff; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; border-left: 8px solid #ff8c00; transition: 0.3s; font-size: 14px; height: 84px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-align: left; line-height: 1.4; overflow: hidden;}
   
   .alert { border-left-color: #d32f2f !important; background: #fff5e6 !important; color: #d32f2f !important; }
@@ -38,20 +37,34 @@
 
   #view-area { width: 100%; height: 320px; background: #f5f5f5; border-radius: 10px; position: relative; overflow: hidden; margin-bottom: 15px; border: 2px solid #ccc; display: flex; align-items: center; justify-content: center; transition: height 0.3s;}
   
-  #side-view { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; position: relative; }
-  #lens-wrapper { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 5; text-align: center; cursor: pointer; }
+  #side-view { width: 100%; height: 320px; position: relative; }
+  #lens-wrapper { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); z-index: 5; text-align: center; cursor: pointer; }
   #revolver-base { width: 60px; height: 15px; background: #444; border-radius: 10px 10px 0 0; margin: 0 auto;}
   #active-lens { width: 28px; border: 2px solid #222; border-radius: 0 0 5px 5px; color: white; font-size: 12px; font-weight: bold; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; margin: 0 auto; transition: all 0.3s;}
+  /* レンズの長さ：4x(35px), 10x(55px), 40x(85px)。先端のY座標は最大140pxになる */
   .lens-type-0 { height: 35px; background: #888; } .lens-type-1 { height: 55px; background: #ffcc00; color: black !important; } .lens-type-2 { height: 85px; background: #d32f2f; } 
   .lens-guide { font-size: 12px; font-weight: bold; color: #005bac; margin-top: 5px; background: rgba(255,255,255,0.8); padding: 2px 5px; border-radius: 4px;}
 
-  /* ★ bottom指定を完全廃止し、Javascriptでのtop絶対配置コントロールに統一 */
   #stage-obj { width: 180px; height: 12px; background: #444; position: absolute; top: 240px; left: 50%; transform: translateX(-50%); transition: top 0.2s linear; }
   #slide-obj { width: 80px; height: 6px; background: rgba(180, 230, 255, 0.6); border: 1px solid #005bac; position: absolute; top: -7px; left: 50px; opacity: 0; transition: opacity 0.3s; }
   .slide-set { opacity: 1 !important; }
   
   #eye-view { display: none; width: 100%; height: 100%; background: black; align-items: center; justify-content: center; }
   #eyepiece-circle { width: 280px; height: 280px; background: white; border-radius: 50%; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; transform: rotate(180deg); transition: width 0.3s, height 0.3s;}
+
+  /* 描画エリア巨大化＋GPUアクセラレーションでモバイルもサクサク動くように */
+  #slide-group {
+    position: absolute;
+    width: 2800px;
+    height: 2800px;
+    left: 50%;
+    top: 50%;
+    margin-left: -1400px;
+    margin-top: -1400px;
+    transition: transform 0.3s, filter 0.3s;
+    transform-origin: 50% 50%;
+    will-change: transform, filter; 
+  }
 
   .control-group { margin-bottom: 10px; padding: 12px; background: #fdfdfd; border: 1px solid #eee; border-radius: 8px; text-align: left; font-size: 14px;}
   .btn-box { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -70,7 +83,6 @@
   
   .rescue-box { text-align: left; background: #fff5e6; border-left: 5px solid #ff8c00; padding: 15px; margin-bottom: 15px; }
   
-  /* 認定証デザイン */
   #license-screen { text-align: center; position: relative; overflow: hidden; padding: 20px 0;}
   .license-title { font-size: 28px; font-weight: bold; background: linear-gradient(45deg, #FF1493, #3f51b5, #00bcd4, #4caf50, #ff9800); -webkit-background-clip: text; color: transparent; animation: rainbow 3s infinite linear; margin-top:0;}
   .license-card { width: 90%; margin: 0 auto; border-radius: 15px; padding: 25px; text-align: left; position: relative; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.3); font-size: 16px;}
@@ -83,9 +95,6 @@
   .confetti { position: absolute; font-size: 24px; animation: fall 3s infinite linear; z-index: 1;}
   @keyframes fall { 0% { transform: translateY(-50px) rotate(0deg); opacity: 1;} 100% { transform: translateY(150vh) rotate(360deg); opacity: 0;} }
 
-  /* =========================================
-     ★ 横向き（ランドスケープ）へのレスポンシブ最適化
-     ========================================= */
   @media (orientation: landscape) {
     #app-container { max-width: 900px; padding: 15px; }
     .simulator-layout { display: flex; gap: 15px; align-items: stretch; }
@@ -197,7 +206,7 @@
           </div>
           <div id="eye-view">
             <div id="eyepiece-circle">
-              <div id="slide-group" style="position:absolute; width:100%; height:100%; transition: transform 0.3s, filter 0.3s; transform-origin: 50% 50%;"></div>
+              <div id="slide-group"></div>
             </div>
           </div>
         </div>
@@ -256,63 +265,34 @@
 </div>
 
 <script>
-  // ==========================================
-  // ★ 端末・画面向きごとの詳細設定エリア ★
-  // 先生が自由に「距離感」や「激突限界」を微調整できます！
-  // ==========================================
+  // ★ 物理法則の崩壊（めり込みバグ）を完全修正した新・座標計算 ★
+  // どの端末でも、ピントが合う位置(distance:15)の時、40xレンズの先端とプレパラートの隙間が必ず「2px」になるように逆算。
   const DEVICE_SETTINGS = {
-    // ① スマホ（縦画面）
-    mobilePortrait: {
-      stageBaseTop: 230,       // プレパラートが一番下にある時のY座標（数値が小さいほど上に配置される）
-      stageMultiplier: 3.0,    // ねじを回した時のプレパラートの移動量（大きいほど早く動く）
-      crashLimits: [0, 7, 13]  // 各レンズの激突限界距離 [4x, 10x, 40x]（※距離15でピントが合います）
-    },
-    // ② スマホ（横画面）- 画面の高さが低いため、基準を高く設定
-    mobileLandscape: {
-      stageBaseTop: 180,
-      stageMultiplier: 2.0,
-      crashLimits: [0, 8, 13]
-    },
-    // ③ iPad・タブレット（縦画面）
-    tabletPortrait: {
-      stageBaseTop: 260,
-      stageMultiplier: 4.0,
-      crashLimits: [0, 8, 13]
-    },
-    // ④ iPad・タブレット（横画面）- 大画面に合わせてプレパラートを大きく動かす
-    tabletLandscape: {
-      stageBaseTop: 280,
-      stageMultiplier: 4.5,
-      crashLimits: [0, 8, 13]
-    }
+    mobilePortrait: { stageBaseTop: 254, stageMultiplier: 3.0, crashLimits: [0, 7, 13] },
+    mobileLandscape: { stageBaseTop: 219, stageMultiplier: 2.0, crashLimits: [0, 8, 13] },
+    tabletPortrait: { stageBaseTop: 289, stageMultiplier: 4.0, crashLimits: [0, 8, 13] },
+    tabletLandscape: { stageBaseTop: 306.5, stageMultiplier: 4.5, crashLimits: [0, 8, 13] }
   };
 
-  let currentDevice = 'mobilePortrait'; // 現在の端末状態を保持
+  let currentDevice = 'mobilePortrait';
 
-  // 画面のサイズと向きから現在のデバイスモードを判定する関数
   function updateDeviceMode() {
     const w = window.innerWidth;
     const h = window.innerHeight;
     const isLandscape = w > h;
-    const isTablet = Math.min(w, h) >= 700; // 短辺が700px以上ならiPad等タブレットと判定
+    const isTablet = Math.min(w, h) >= 700;
 
-    if (isTablet) {
-      currentDevice = isLandscape ? 'tabletLandscape' : 'tabletPortrait';
-    } else {
-      currentDevice = isLandscape ? 'mobileLandscape' : 'mobilePortrait';
-    }
-    // モードが変わったらプレパラートの表示位置を再計算
+    if (isTablet) currentDevice = isLandscape ? 'tabletLandscape' : 'tabletPortrait';
+    else currentDevice = isLandscape ? 'mobileLandscape' : 'mobilePortrait';
+    
     updateStagePosition();
   }
 
-  // 画面回転時やリサイズ時に自動判定を実行
   window.addEventListener('resize', updateDeviceMode);
   window.addEventListener('DOMContentLoaded', updateDeviceMode);
 
-  // ------------------------------------------
-
   const svgOnion = `
-    <svg viewBox="-100 -100 200 200" style="width: 100%; height: 100%; overflow: visible;">
+    <svg viewBox="-1000 -1000 2000 2000" style="width: 100%; height: 100%; overflow: visible;">
       <defs>
         <pattern id="onion-cell" x="0" y="0" width="80" height="40" patternUnits="userSpaceOnUse">
           <rect x="0" y="0" width="80" height="40" fill="#fce4ec" stroke="#ad1457" stroke-width="2" />
@@ -321,7 +301,7 @@
           <circle cx="60" cy="25" r="3.5" fill="#880e4f" opacity="0.4" />
         </pattern>
       </defs>
-      <rect x="-500" y="-500" width="1000" height="1000" fill="url(#onion-cell)" />
+      <rect x="-4000" y="-4000" width="8000" height="8000" fill="url(#onion-cell)" />
       <g id="target-cell">
         <rect x="-40" y="-20" width="80" height="40" fill="#f8bbd0" stroke="#880e4f" stroke-width="3" />
         <circle cx="-10" cy="5" r="6" fill="#4a148c" />
@@ -333,7 +313,8 @@
   `;
 
   const svgEuglena = `
-    <svg viewBox="-100 -100 200 200" style="width: 100%; height: 100%; overflow: visible;">
+    <svg viewBox="-1000 -1000 2000 2000" style="width: 100%; height: 100%; overflow: visible;">
+      <rect x="-4000" y="-4000" width="8000" height="8000" fill="#f5f5f5" />
       <defs>
         <g id="euglena">
           <path d="M -30,0 C -10,-15 20,-10 35,0 C 20,10 -10,15 -30,0 Z" fill="#c5e1a5" stroke="#558b2f" stroke-width="1" />
@@ -358,7 +339,7 @@
   let currentMode = 1;
   let distance = 50; 
   let targetDistance = 15; 
-  let slideX = 60, slideY = 60; // 矢印で探させる初期位置
+  let slideX = 60, slideY = 60; 
   let currentLensType = 1; 
   let isSlideSet = false, isGameOver = false, currentStep = 0;
   let timeLeft = 180, timerId = null;
@@ -452,7 +433,6 @@
   }
 
   function updateStagePosition() {
-    // ★ 端末設定に基づきプレパラートのY座標（Top）を計算し、視覚ズレを解消
     const settings = DEVICE_SETTINGS[currentDevice];
     const stageTop = settings.stageBaseTop - (50 - distance) * settings.stageMultiplier; 
     document.getElementById('stage-obj').style.top = stageTop + "px";
@@ -476,7 +456,6 @@
     if (document.getElementById('eye-view').style.display !== 'flex') return;
     
     const focusDist = Math.abs(distance - targetDistance);
-    
     const posDist = Math.abs(slideX) <= 50 && Math.abs(slideY) <= 50;
     const posStrict = Math.abs(slideX) <= 10 && Math.abs(slideY) <= 10; 
     
@@ -584,7 +563,6 @@
     msgBoard("⚠️【STEP 4】最高倍率400倍！さらに暗くなります！「微動ねじ」だけでピントを合わせよ！粗動ねじは一発免停！");
     document.getElementById('status-board').className = 'alert';
     
-    // ★ 判定即時更新によるエラーすり抜け防止
     checkMagAvailability();
     updateStagePosition();
     updateVisuals();
@@ -604,7 +582,6 @@
 
     distance += val;
     
-    // ★ 端末ごとの激突限界ラインを参照
     const currentLimits = DEVICE_SETTINGS[currentDevice].crashLimits;
     if (distance <= currentLimits[currentLensType]) { 
         distance = currentLimits[currentLensType]; 
@@ -690,11 +667,21 @@
       let blur = Math.min(rawBlur, 15); 
       
       const irisVal = parseInt(document.getElementById('iris').value, 10);
-      let baseBrightness = 1.0; 
-      if (currentStep === 3) baseBrightness = 0.4;
-      if (currentStep >= 4) baseBrightness = 0.1;
-      const brightness = baseBrightness + (irisVal / 100);
+      let baseBrightness = 1.0;
+      let irisFactor = 0;
+
+      if (currentStep < 3) {
+        baseBrightness = 0.8;
+        irisFactor = (irisVal / 100) * 0.4;
+      } else if (currentStep === 3) {
+        baseBrightness = 0.4;
+        irisFactor = (irisVal / 100) * 0.6;
+      } else {
+        baseBrightness = 0.1;
+        irisFactor = (irisVal / 100) * 0.8;
+      }
       
+      const brightness = baseBrightness + irisFactor;
       slideGroup.style.filter = `blur(${blur}px) brightness(${brightness})`;
     }
   }

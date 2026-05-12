@@ -82,11 +82,14 @@
   .confetti { position: absolute; font-size: 24px; animation: fall 3s infinite linear; z-index: 1;}
   @keyframes fall { 0% { transform: translateY(-50px) rotate(0deg); opacity: 1;} 100% { transform: translateY(150vh) rotate(360deg); opacity: 0;} }
 
-  /* 横向き（ランドスケープ）へのレスポンシブ最適化 */
+  /* =========================================
+     ★ 横向き（ランドスケープ）へのレスポンシブ最適化
+     ========================================= */
   @media (orientation: landscape) {
     #app-container { max-width: 900px; padding: 15px; }
     .simulator-layout { display: flex; gap: 15px; align-items: stretch; }
     .simulator-layout > .left-col { flex: 1; min-width: 0; }
+    /* 操作パネル側（右側）だけ独立スクロール */
     .simulator-layout > .right-col { flex: 1; min-width: 300px; display: flex; flex-direction: column; overflow-y: auto; max-height: calc(100vh - 150px); padding-right: 5px;}
     #view-area { margin-bottom: 0; height: calc(100vh - 180px); min-height: 250px;}
     #eyepiece-circle { width: 220px; height: 220px; }
@@ -299,11 +302,12 @@
   let currentMode = 1;
   let distance = 50; 
   let targetDistance = 15; 
-  let slideX = 60, slideY = 60; 
+  let slideX = 60, slideY = 60; // 矢印で探させる初期位置
   let currentLensType = 1; 
   let isSlideSet = false, isGameOver = false, currentStep = 0;
   let timeLeft = 180, timerId = null;
   
+  // ★ 激突限界ライン：4x(0), 10x(8), 40x(13)。ターゲット15に対し、40xは2段階で激突する超シビア設定
   const crashLimits = [0, 8, 13]; 
   
   const quizzes = [
@@ -369,7 +373,7 @@
   }
 
   function rotateLens() {
-    if (currentStep > 0) return; 
+    if (currentStep > 0) return; // 観察開始後は手での回転を禁止
     currentLensType = (currentLensType + 1) % 3; 
     const lensEl = document.getElementById('active-lens');
     lensEl.className = `lens-type-${currentLensType}`;
@@ -417,7 +421,6 @@
     if (document.getElementById('eye-view').style.display !== 'flex') return;
     
     const focusDist = Math.abs(distance - targetDistance);
-    
     const posDist = Math.abs(slideX) <= 50 && Math.abs(slideY) <= 50;
     const posStrict = Math.abs(slideX) <= 10 && Math.abs(slideY) <= 10; 
     
@@ -502,6 +505,8 @@
     lensEl.innerText = '10x';
 
     distance += (Math.random() < 0.5 ? 1 : -1); 
+    
+    // ★ 状態の即時更新
     checkMagAvailability();
     updateStagePosition();
     updateVisuals();
@@ -524,11 +529,10 @@
     msgBoard("⚠️【STEP 4】最高倍率400倍！さらに暗くなります！「微動ねじ」だけでピントを合わせよ！粗動ねじは一発免停！");
     document.getElementById('status-board').className = 'alert';
     
+    // ★ 状態の即時更新（コンマ数秒のラグによるすり抜け防止）
+    checkMagAvailability();
     updateStagePosition();
     updateVisuals();
-    
-    // ★ 判定の即時更新漏れを修正
-    checkMagAvailability();
   }
 
   function moveFocus(val, type) {
@@ -619,6 +623,7 @@
     
     const slideGroup = document.getElementById('slide-group');
     if (slideGroup) {
+      // ★ 数学的バグ修正：必ず「Scale（拡大）」してから「Translate（移動）」させることで高倍率時のシビアな移動速度を完璧に再現
       slideGroup.style.transform = `scale(${scale}) translate(${slideX}px, ${slideY}px)`;
       
       let blurMultiplier = 3;

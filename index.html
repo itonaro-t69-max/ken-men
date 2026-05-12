@@ -29,8 +29,8 @@
   
   #timer-board { font-size: 22px; color: #d32f2f; font-weight: bold; margin-bottom: 10px; background: #ffebee; padding: 8px; border-radius: 8px; border: 2px solid #ef5350; text-align: center;}
   
-  /* レイアウトガタつき防止：高さを76pxで完全固定 */
-  #status-board { background: #333; color: #fff; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; border-left: 8px solid #ff8c00; transition: 0.3s; font-size: 14px; height: 76px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-align: left; line-height: 1.4; overflow: hidden;}
+  /* レイアウトガタつき防止 */
+  #status-board { background: #333; color: #fff; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; border-left: 8px solid #ff8c00; transition: 0.3s; font-size: 14px; height: 84px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-align: left; line-height: 1.4; overflow: hidden;}
   
   .alert { border-left-color: #d32f2f !important; background: #fff5e6 !important; color: #d32f2f !important; }
   .success { border-left-color: #005bac !important; background: #e6f0ff !important; color: #005bac !important; }
@@ -45,7 +45,8 @@
   .lens-type-0 { height: 35px; background: #888; } .lens-type-1 { height: 55px; background: #ffcc00; color: black !important; } .lens-type-2 { height: 85px; background: #d32f2f; } 
   .lens-guide { font-size: 12px; font-weight: bold; color: #005bac; margin-top: 5px; background: rgba(255,255,255,0.8); padding: 2px 5px; border-radius: 4px;}
 
-  #stage-obj { width: 180px; height: 12px; background: #444; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); transition: bottom 0.2s linear; }
+  /* ★ bottom指定を完全廃止し、Javascriptでのtop絶対配置コントロールに統一 */
+  #stage-obj { width: 180px; height: 12px; background: #444; position: absolute; top: 240px; left: 50%; transform: translateX(-50%); transition: top 0.2s linear; }
   #slide-obj { width: 80px; height: 6px; background: rgba(180, 230, 255, 0.6); border: 1px solid #005bac; position: absolute; top: -7px; left: 50px; opacity: 0; transition: opacity 0.3s; }
   .slide-set { opacity: 1 !important; }
   
@@ -89,7 +90,6 @@
     #app-container { max-width: 900px; padding: 15px; }
     .simulator-layout { display: flex; gap: 15px; align-items: stretch; }
     .simulator-layout > .left-col { flex: 1; min-width: 0; }
-    /* 操作パネル側（右側）だけ独立スクロール */
     .simulator-layout > .right-col { flex: 1; min-width: 300px; display: flex; flex-direction: column; overflow-y: auto; max-height: calc(100vh - 150px); padding-right: 5px;}
     #view-area { margin-bottom: 0; height: calc(100vh - 180px); min-height: 250px;}
     #eyepiece-circle { width: 220px; height: 220px; }
@@ -99,7 +99,7 @@
     body { padding: 5px; }
     #app-container { padding: 10px; }
     h1 { font-size: 18px; margin-bottom: 5px; padding-bottom: 5px;}
-    #status-board { padding: 6px 10px; font-size: 12px; margin-bottom: 10px; height: 50px;}
+    #status-board { padding: 6px 10px; font-size: 12px; margin-bottom: 10px; height: 60px;}
     .control-group { padding: 8px; margin-bottom: 8px;}
     button.op-btn { padding: 6px 4px; font-size: 12px; }
     input[type="range"] { height: 20px; }
@@ -123,8 +123,9 @@
     
     <div class="rescue-box" style="border-color:#4caf50;">
       <h3 style="margin-top:0; color:#2e7d32;">① プレパラートの動かし方</h3>
-      <p>顕微鏡の視野は<strong>「上下左右が逆（倒立像）」</strong>になります。<br>
-      💡 <strong>鉄則：</strong>見たい対象が視野の「左上」に見えているなら、プレパラートも「左・上（奥）」へ動かします。<strong>「見えている方向へ追いかける」</strong>イメージで操作しましょう！</p>
+      <p>顕微鏡の視野は<strong>「上下左右が逆（倒立像）」</strong>になります。以下のルールを覚えましょう！<br><br>
+      ・<strong>視野の中の像の動き：</strong>プレパラートを動かした方向と<strong>真逆の方向</strong>へ像が動きます。<br>
+      ・<strong>中央への寄せ方：</strong>見たいものを視野の中央に移動させたい場合、レンズをのぞいて<strong>見えている方向と同じ方向</strong>へプレパラートを動かします。</p>
     </div>
     
     <div class="rescue-box" style="border-color:#4caf50;">
@@ -255,6 +256,61 @@
 </div>
 
 <script>
+  // ==========================================
+  // ★ 端末・画面向きごとの詳細設定エリア ★
+  // 先生が自由に「距離感」や「激突限界」を微調整できます！
+  // ==========================================
+  const DEVICE_SETTINGS = {
+    // ① スマホ（縦画面）
+    mobilePortrait: {
+      stageBaseTop: 230,       // プレパラートが一番下にある時のY座標（数値が小さいほど上に配置される）
+      stageMultiplier: 3.0,    // ねじを回した時のプレパラートの移動量（大きいほど早く動く）
+      crashLimits: [0, 7, 13]  // 各レンズの激突限界距離 [4x, 10x, 40x]（※距離15でピントが合います）
+    },
+    // ② スマホ（横画面）- 画面の高さが低いため、基準を高く設定
+    mobileLandscape: {
+      stageBaseTop: 180,
+      stageMultiplier: 2.0,
+      crashLimits: [0, 8, 13]
+    },
+    // ③ iPad・タブレット（縦画面）
+    tabletPortrait: {
+      stageBaseTop: 260,
+      stageMultiplier: 4.0,
+      crashLimits: [0, 8, 13]
+    },
+    // ④ iPad・タブレット（横画面）- 大画面に合わせてプレパラートを大きく動かす
+    tabletLandscape: {
+      stageBaseTop: 280,
+      stageMultiplier: 4.5,
+      crashLimits: [0, 8, 13]
+    }
+  };
+
+  let currentDevice = 'mobilePortrait'; // 現在の端末状態を保持
+
+  // 画面のサイズと向きから現在のデバイスモードを判定する関数
+  function updateDeviceMode() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const isLandscape = w > h;
+    const isTablet = Math.min(w, h) >= 700; // 短辺が700px以上ならiPad等タブレットと判定
+
+    if (isTablet) {
+      currentDevice = isLandscape ? 'tabletLandscape' : 'tabletPortrait';
+    } else {
+      currentDevice = isLandscape ? 'mobileLandscape' : 'mobilePortrait';
+    }
+    // モードが変わったらプレパラートの表示位置を再計算
+    updateStagePosition();
+  }
+
+  // 画面回転時やリサイズ時に自動判定を実行
+  window.addEventListener('resize', updateDeviceMode);
+  window.addEventListener('DOMContentLoaded', updateDeviceMode);
+
+  // ------------------------------------------
+
   const svgOnion = `
     <svg viewBox="-100 -100 200 200" style="width: 100%; height: 100%; overflow: visible;">
       <defs>
@@ -306,9 +362,6 @@
   let currentLensType = 1; 
   let isSlideSet = false, isGameOver = false, currentStep = 0;
   let timeLeft = 180, timerId = null;
-  
-  // ★ 激突限界ライン：4x(0), 10x(8), 40x(13)。ターゲット15に対し、40xは2段階で激突する超シビア設定
-  const crashLimits = [0, 8, 13]; 
   
   const quizzes = [
     { q: "倍率を上げる前に行うことは？", a: ["対象を視野の中央にする", "絞りを閉じる"], c: 0 },
@@ -373,7 +426,7 @@
   }
 
   function rotateLens() {
-    if (currentStep > 0) return; // 観察開始後は手での回転を禁止
+    if (currentStep > 0) return; 
     currentLensType = (currentLensType + 1) % 3; 
     const lensEl = document.getElementById('active-lens');
     lensEl.className = `lens-type-${currentLensType}`;
@@ -399,8 +452,10 @@
   }
 
   function updateStagePosition() {
-    const stagePos = 10 + (50 - distance) * 2.8; 
-    document.getElementById('stage-obj').style.bottom = stagePos + "px";
+    // ★ 端末設定に基づきプレパラートのY座標（Top）を計算し、視覚ズレを解消
+    const settings = DEVICE_SETTINGS[currentDevice];
+    const stageTop = settings.stageBaseTop - (50 - distance) * settings.stageMultiplier; 
+    document.getElementById('stage-obj').style.top = stageTop + "px";
   }
 
   function moveStage(dx, dy) {
@@ -421,6 +476,7 @@
     if (document.getElementById('eye-view').style.display !== 'flex') return;
     
     const focusDist = Math.abs(distance - targetDistance);
+    
     const posDist = Math.abs(slideX) <= 50 && Math.abs(slideY) <= 50;
     const posStrict = Math.abs(slideX) <= 10 && Math.abs(slideY) <= 10; 
     
@@ -506,7 +562,6 @@
 
     distance += (Math.random() < 0.5 ? 1 : -1); 
     
-    // ★ 状態の即時更新
     checkMagAvailability();
     updateStagePosition();
     updateVisuals();
@@ -529,7 +584,7 @@
     msgBoard("⚠️【STEP 4】最高倍率400倍！さらに暗くなります！「微動ねじ」だけでピントを合わせよ！粗動ねじは一発免停！");
     document.getElementById('status-board').className = 'alert';
     
-    // ★ 状態の即時更新（コンマ数秒のラグによるすり抜け防止）
+    // ★ 判定即時更新によるエラーすり抜け防止
     checkMagAvailability();
     updateStagePosition();
     updateVisuals();
@@ -549,8 +604,10 @@
 
     distance += val;
     
-    if (distance <= crashLimits[currentLensType]) { 
-        distance = crashLimits[currentLensType]; 
+    // ★ 端末ごとの激突限界ラインを参照
+    const currentLimits = DEVICE_SETTINGS[currentDevice].crashLimits;
+    if (distance <= currentLimits[currentLensType]) { 
+        distance = currentLimits[currentLensType]; 
         updateStagePosition(); updateVisuals(); 
         gameOver("❌【一発免停】ガシャン！レンズがプレパラートに衝突し破損しました！"); return; 
     }
@@ -623,7 +680,6 @@
     
     const slideGroup = document.getElementById('slide-group');
     if (slideGroup) {
-      // ★ 数学的バグ修正：必ず「Scale（拡大）」してから「Translate（移動）」させることで高倍率時のシビアな移動速度を完璧に再現
       slideGroup.style.transform = `scale(${scale}) translate(${slideX}px, ${slideY}px)`;
       
       let blurMultiplier = 3;
@@ -633,7 +689,7 @@
       let rawBlur = Math.abs(distance - targetDistance) * blurMultiplier;
       let blur = Math.min(rawBlur, 15); 
       
-      const irisVal = parseInt(document.getElementById('iris').value);
+      const irisVal = parseInt(document.getElementById('iris').value, 10);
       let baseBrightness = 1.0; 
       if (currentStep === 3) baseBrightness = 0.4;
       if (currentStep >= 4) baseBrightness = 0.1;
@@ -650,7 +706,7 @@
       let confetti = document.createElement('div');
       confetti.className = 'confetti';
       confetti.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-      confetti.style.left = Math.random() * 100 + 'vw';
+      confetti.style.left = Math.random() * 100 + '%';
       confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
       confetti.style.animationDelay = Math.random() * 2 + 's';
       container.appendChild(confetti);
@@ -684,7 +740,7 @@
     
     if (currentStep < requiredStep) { alert(`❌ 不合格！まだ目標倍率「${targetMag}」での詳細な観察が終わっていません！`); return; }
 
-    const iris = document.getElementById('iris').value;
+    const iris = parseInt(document.getElementById('iris').value, 10);
     const focusOK = Math.abs(distance - targetDistance) === 0;
     
     const posOK = currentMode === 1 ? (Math.abs(slideX) <= 50 && Math.abs(slideY) <= 50) : (Math.abs(slideX) <= 10 && Math.abs(slideY) <= 10);

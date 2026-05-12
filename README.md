@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>顕微鏡・操作免許センター</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
+  /* 基本設定：テキスト選択や長押しメニュー禁止 */
   body { 
     font-family: 'BIZ UDGothic', sans-serif; 
     background-color: #f0f7ff; color: #333; line-height: 1.6; margin: 0; padding: 15px; 
@@ -17,7 +18,10 @@
     -webkit-tap-highlight-color: transparent;
   }
   
-  #app-container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); border: 2px solid #d0d0d0; transition: max-width 0.3s;}
+  #app-container { 
+    margin: 0 auto; background: white; padding: 20px; border-radius: 12px; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15); border: 2px solid #d0d0d0; transition: all 0.3s;
+  }
   h1 { font-size: 22px; border-bottom: 3px solid #005bac; padding-bottom: 10px; margin-top: 0;}
 
   button { touch-action: manipulation; }
@@ -29,42 +33,28 @@
   
   #timer-board { font-size: 22px; color: #d32f2f; font-weight: bold; margin-bottom: 10px; background: #ffebee; padding: 8px; border-radius: 8px; border: 2px solid #ef5350; text-align: center;}
   
-  #status-board { background: #333; color: #fff; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; border-left: 8px solid #ff8c00; transition: 0.3s; font-size: 14px; height: 84px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-align: left; line-height: 1.4; overflow: hidden;}
+  /* メッセージボードの高さを完全固定しレイアウトシフトを撲滅 */
+  #status-board { background: #333; color: #fff; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; border-left: 8px solid #ff8c00; transition: 0.3s; font-size: 14px; height: 80px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-align: left; line-height: 1.4; overflow: hidden;}
   
   .alert { border-left-color: #d32f2f !important; background: #fff5e6 !important; color: #d32f2f !important; }
   .success { border-left-color: #005bac !important; background: #e6f0ff !important; color: #005bac !important; }
   .warning { border-left-color: #ffeb3b !important; background: #fffde7 !important; color: #f57f17 !important; }
 
-  #view-area { width: 100%; height: 320px; background: #f5f5f5; border-radius: 10px; position: relative; overflow: hidden; margin-bottom: 15px; border: 2px solid #ccc; display: flex; align-items: center; justify-content: center; transition: height 0.3s;}
+  #view-area { width: 100%; background: #f5f5f5; border-radius: 10px; position: relative; overflow: hidden; margin-bottom: 15px; border: 2px solid #ccc; display: flex; align-items: center; justify-content: center; transition: all 0.3s;}
   
-  #side-view { width: 100%; height: 320px; position: relative; }
-  #lens-wrapper { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); z-index: 5; text-align: center; cursor: pointer; }
+  #side-view { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; position: relative; min-height: 250px;}
+  #lens-wrapper { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 5; text-align: center; cursor: pointer; }
   #revolver-base { width: 60px; height: 15px; background: #444; border-radius: 10px 10px 0 0; margin: 0 auto;}
   #active-lens { width: 28px; border: 2px solid #222; border-radius: 0 0 5px 5px; color: white; font-size: 12px; font-weight: bold; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; margin: 0 auto; transition: all 0.3s;}
-  /* レンズの長さ：4x(35px), 10x(55px), 40x(85px)。先端のY座標は最大140pxになる */
   .lens-type-0 { height: 35px; background: #888; } .lens-type-1 { height: 55px; background: #ffcc00; color: black !important; } .lens-type-2 { height: 85px; background: #d32f2f; } 
   .lens-guide { font-size: 12px; font-weight: bold; color: #005bac; margin-top: 5px; background: rgba(255,255,255,0.8); padding: 2px 5px; border-radius: 4px;}
 
-  #stage-obj { width: 180px; height: 12px; background: #444; position: absolute; top: 240px; left: 50%; transform: translateX(-50%); transition: top 0.2s linear; }
+  #stage-obj { width: 180px; height: 12px; background: #444; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); transition: bottom 0.2s linear; }
   #slide-obj { width: 80px; height: 6px; background: rgba(180, 230, 255, 0.6); border: 1px solid #005bac; position: absolute; top: -7px; left: 50px; opacity: 0; transition: opacity 0.3s; }
   .slide-set { opacity: 1 !important; }
   
   #eye-view { display: none; width: 100%; height: 100%; background: black; align-items: center; justify-content: center; }
-  #eyepiece-circle { width: 280px; height: 280px; background: white; border-radius: 50%; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; transform: rotate(180deg); transition: width 0.3s, height 0.3s;}
-
-  /* 描画エリア巨大化＋GPUアクセラレーションでモバイルもサクサク動くように */
-  #slide-group {
-    position: absolute;
-    width: 2800px;
-    height: 2800px;
-    left: 50%;
-    top: 50%;
-    margin-left: -1400px;
-    margin-top: -1400px;
-    transition: transform 0.3s, filter 0.3s;
-    transform-origin: 50% 50%;
-    will-change: transform, filter; 
-  }
+  #eyepiece-circle { background: white; border-radius: 50%; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; transform: rotate(180deg); transition: all 0.3s; }
 
   .control-group { margin-bottom: 10px; padding: 12px; background: #fdfdfd; border: 1px solid #eee; border-radius: 8px; text-align: left; font-size: 14px;}
   .btn-box { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -83,6 +73,7 @@
   
   .rescue-box { text-align: left; background: #fff5e6; border-left: 5px solid #ff8c00; padding: 15px; margin-bottom: 15px; }
   
+  /* 認定証デザイン */
   #license-screen { text-align: center; position: relative; overflow: hidden; padding: 20px 0;}
   .license-title { font-size: 28px; font-weight: bold; background: linear-gradient(45deg, #FF1493, #3f51b5, #00bcd4, #4caf50, #ff9800); -webkit-background-clip: text; color: transparent; animation: rainbow 3s infinite linear; margin-top:0;}
   .license-card { width: 90%; margin: 0 auto; border-radius: 15px; padding: 25px; text-align: left; position: relative; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.3); font-size: 16px;}
@@ -95,22 +86,61 @@
   .confetti { position: absolute; font-size: 24px; animation: fall 3s infinite linear; z-index: 1;}
   @keyframes fall { 0% { transform: translateY(-50px) rotate(0deg); opacity: 1;} 100% { transform: translateY(150vh) rotate(360deg); opacity: 0;} }
 
-  @media (orientation: landscape) {
-    #app-container { max-width: 900px; padding: 15px; }
-    .simulator-layout { display: flex; gap: 15px; align-items: stretch; }
-    .simulator-layout > .left-col { flex: 1; min-width: 0; }
-    .simulator-layout > .right-col { flex: 1; min-width: 300px; display: flex; flex-direction: column; overflow-y: auto; max-height: calc(100vh - 150px); padding-right: 5px;}
-    #view-area { margin-bottom: 0; height: calc(100vh - 180px); min-height: 250px;}
-    #eyepiece-circle { width: 220px; height: 220px; }
+  /* =========================================
+     ★ 全デバイス・レスポンシブ最適化
+     ========================================= */
+
+  /* 1. ベース（スマホ縦画面） */
+  #app-container { max-width: 600px; }
+  .simulator-layout { display: flex; flex-direction: column; gap: 15px; }
+  .simulator-layout > .left-col, .simulator-layout > .right-col { width: 100%; }
+  #view-area { height: 320px; }
+  #eyepiece-circle { width: 280px; height: 280px; }
+
+  /* 2. タブレット縦画面 (iPad Portrait) */
+  @media (min-width: 768px) and (orientation: portrait) {
+    #app-container { max-width: 720px; padding: 30px; }
+    h1 { font-size: 26px; }
+    #view-area { height: 450px; }
+    #eyepiece-circle { width: 380px; height: 380px; }
+    .op-btn { font-size: 16px; padding: 12px 5px; }
   }
 
+  /* 3. タブレット＆PC 横画面 (iPad/PC Landscape) */
+  @media (min-width: 768px) and (orientation: landscape) and (min-height: 501px) {
+    #app-container { max-width: 1000px; padding: 25px; }
+    .simulator-layout { flex-direction: row; align-items: stretch; }
+    .simulator-layout > .left-col { flex: 1.2; min-width: 0; }
+    /* 右の操作パネルは独立スクロール可能に */
+    .simulator-layout > .right-col { flex: 1; min-width: 320px; display: flex; flex-direction: column; overflow-y: auto; max-height: 550px; padding-right: 10px; }
+    #view-area { margin-bottom: 0; height: 100%; min-height: 450px; }
+    #eyepiece-circle { width: 360px; height: 360px; }
+    h1 { font-size: 24px; }
+  }
+
+  /* 4. PC 大画面 (Large Desktop) */
+  @media (min-width: 1200px) and (orientation: landscape) {
+    #app-container { max-width: 1100px; padding: 30px; }
+    .simulator-layout > .left-col { flex: 1.5; }
+    #view-area { height: 550px; }
+    #eyepiece-circle { width: 450px; height: 450px; }
+    .simulator-layout > .right-col { max-height: 600px; }
+  }
+
+  /* 5. スマホ横画面 (iPhone Landscape) */
   @media (orientation: landscape) and (max-height: 500px) {
-    body { padding: 5px; }
-    #app-container { padding: 10px; }
-    h1 { font-size: 18px; margin-bottom: 5px; padding-bottom: 5px;}
-    #status-board { padding: 6px 10px; font-size: 12px; margin-bottom: 10px; height: 60px;}
+    body { padding: 5px; padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+    #app-container { max-width: 100% !important; padding: 10px; }
+    .simulator-layout { flex-direction: row; align-items: stretch; gap: 10px;}
+    .simulator-layout > .left-col { flex: 1; min-width: 0; }
+    .simulator-layout > .right-col { flex: 1; min-width: 280px; display: flex; flex-direction: column; overflow-y: auto; max-height: calc(100vh - 90px); padding-right: 5px; }
+    h1 { font-size: 16px; margin-bottom: 5px; padding-bottom: 5px;}
+    #status-board { padding: 4px 10px; font-size: 12px; margin-bottom: 8px; height: 56px; min-height: 56px;}
+    #view-area { height: calc(100vh - 100px); min-height: 220px; margin-bottom: 0;}
+    #eyepiece-circle { width: 200px; height: 200px; }
     .control-group { padding: 8px; margin-bottom: 8px;}
     button.op-btn { padding: 6px 4px; font-size: 12px; }
+    .btn-box { gap: 4px; }
     input[type="range"] { height: 20px; }
   }
 </style>
@@ -129,27 +159,22 @@
 
   <div id="tutorial-screen" class="hidden">
     <h2 style="color: #4caf50;">🔰 顕微鏡の絶対ルール</h2>
-    
     <div class="rescue-box" style="border-color:#4caf50;">
       <h3 style="margin-top:0; color:#2e7d32;">① プレパラートの動かし方</h3>
-      <p>顕微鏡の視野は<strong>「上下左右が逆（倒立像）」</strong>になります。以下のルールを覚えましょう！<br><br>
-      ・<strong>視野の中の像の動き：</strong>プレパラートを動かした方向と<strong>真逆の方向</strong>へ像が動きます。<br>
-      ・<strong>中央への寄せ方：</strong>見たいものを視野の中央に移動させたい場合、レンズをのぞいて<strong>見えている方向と同じ方向</strong>へプレパラートを動かします。</p>
+      <p>顕微鏡の視野は<strong>「上下左右が逆（倒立像）」</strong>になります。<br>
+      💡 <strong>鉄則：</strong>見たい対象が視野の「左上」に見えているなら、プレパラートも「左・上（奥）」へ動かします。<strong>「見えている方向へ追いかける」</strong>イメージで操作しましょう！</p>
     </div>
-    
     <div class="rescue-box" style="border-color:#4caf50;">
       <h3 style="margin-top:0; color:#2e7d32;">② ピント合わせの順序</h3>
       <p>1. まず「横から見て」粗動ねじでレンズを極限まで近づけます。<br>
       2. 次に「覗きながら」ねじを<strong>遠ざける方向</strong>に回してピントを探します。</p>
     </div>
-
     <div class="rescue-box" style="border-color:#d32f2f;">
       <h3 style="margin-top:0; color:#d32f2f;">🚫 一発免停（破損）になる操作</h3>
       <p>・覗きながら「近づける」方向にねじを回す<br>
       ・100倍、400倍の高倍率で「粗動ねじ（大きく動く）」を触る<br>
       ・対象を「ど真ん中」に置かないまま高倍率に切り替える（見失います）</p>
     </div>
-    
     <button class="menu-btn" style="background:#555; margin-top:20px;" onclick="location.reload()">トップに戻る</button>
   </div>
 
@@ -206,7 +231,7 @@
           </div>
           <div id="eye-view">
             <div id="eyepiece-circle">
-              <div id="slide-group"></div>
+              <div id="slide-group" style="position:absolute; width:100%; height:100%; transition: transform 0.3s, filter 0.3s; transform-origin: center;"></div>
             </div>
           </div>
         </div>
@@ -265,34 +290,8 @@
 </div>
 
 <script>
-  // ★ 物理法則の崩壊（めり込みバグ）を完全修正した新・座標計算 ★
-  // どの端末でも、ピントが合う位置(distance:15)の時、40xレンズの先端とプレパラートの隙間が必ず「2px」になるように逆算。
-  const DEVICE_SETTINGS = {
-    mobilePortrait: { stageBaseTop: 254, stageMultiplier: 3.0, crashLimits: [0, 7, 13] },
-    mobileLandscape: { stageBaseTop: 219, stageMultiplier: 2.0, crashLimits: [0, 8, 13] },
-    tabletPortrait: { stageBaseTop: 289, stageMultiplier: 4.0, crashLimits: [0, 8, 13] },
-    tabletLandscape: { stageBaseTop: 306.5, stageMultiplier: 4.5, crashLimits: [0, 8, 13] }
-  };
-
-  let currentDevice = 'mobilePortrait';
-
-  function updateDeviceMode() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    const isLandscape = w > h;
-    const isTablet = Math.min(w, h) >= 700;
-
-    if (isTablet) currentDevice = isLandscape ? 'tabletLandscape' : 'tabletPortrait';
-    else currentDevice = isLandscape ? 'mobileLandscape' : 'mobilePortrait';
-    
-    updateStagePosition();
-  }
-
-  window.addEventListener('resize', updateDeviceMode);
-  window.addEventListener('DOMContentLoaded', updateDeviceMode);
-
   const svgOnion = `
-    <svg viewBox="-1000 -1000 2000 2000" style="width: 100%; height: 100%; overflow: visible;">
+    <svg viewBox="-100 -100 200 200" style="width: 100%; height: 100%; overflow: visible;">
       <defs>
         <pattern id="onion-cell" x="0" y="0" width="80" height="40" patternUnits="userSpaceOnUse">
           <rect x="0" y="0" width="80" height="40" fill="#fce4ec" stroke="#ad1457" stroke-width="2" />
@@ -301,7 +300,7 @@
           <circle cx="60" cy="25" r="3.5" fill="#880e4f" opacity="0.4" />
         </pattern>
       </defs>
-      <rect x="-4000" y="-4000" width="8000" height="8000" fill="url(#onion-cell)" />
+      <rect x="-500" y="-500" width="1000" height="1000" fill="url(#onion-cell)" />
       <g id="target-cell">
         <rect x="-40" y="-20" width="80" height="40" fill="#f8bbd0" stroke="#880e4f" stroke-width="3" />
         <circle cx="-10" cy="5" r="6" fill="#4a148c" />
@@ -313,8 +312,7 @@
   `;
 
   const svgEuglena = `
-    <svg viewBox="-1000 -1000 2000 2000" style="width: 100%; height: 100%; overflow: visible;">
-      <rect x="-4000" y="-4000" width="8000" height="8000" fill="#f5f5f5" />
+    <svg viewBox="-100 -100 200 200" style="width: 100%; height: 100%; overflow: visible;">
       <defs>
         <g id="euglena">
           <path d="M -30,0 C -10,-15 20,-10 35,0 C 20,10 -10,15 -30,0 Z" fill="#c5e1a5" stroke="#558b2f" stroke-width="1" />
@@ -339,15 +337,18 @@
   let currentMode = 1;
   let distance = 50; 
   let targetDistance = 15; 
-  let slideX = 60, slideY = 60; 
+  let slideX = 60, slideY = 60; // 矢印で探させる初期位置
   let currentLensType = 1; 
   let isSlideSet = false, isGameOver = false, currentStep = 0;
   let timeLeft = 180, timerId = null;
   
+  // ★ 超シビアなレンズ激突限界設定（targetDistance=15 に対して）
+  const crashLimits = [0, 8, 13]; // 4xは0, 10xは8, 40xは13
+  
   const quizzes = [
     { q: "倍率を上げる前に行うことは？", a: ["対象を視野の中央にする", "絞りを閉じる"], c: 0 },
     { q: "最初に見るべき対物レンズは？", a: ["10倍・40倍（長い）", "4倍（短い）"], c: 1 },
-    { q: "顕微鏡で見える像の特徴は？", a: ["上下左右が逆（倒立像）", "そのまま（正立像）"], c: 0 },
+    { q: "顕微鏡で見える像（見え方）の特徴は？", a: ["上下左右が逆（倒立像）", "そのまま（正立像）"], c: 0 },
     { q: "高倍率（400倍等）でピントを合わせる時は？", a: ["粗動ねじを使う", "微動ねじだけを使う"], c: 1 }
   ];
 
@@ -403,7 +404,7 @@
     isSlideSet = true;
     document.getElementById('btn-set-slide').disabled = true;
     document.getElementById('slide-obj').classList.add('slide-set');
-    msgBoard("【準備】レンズをクリックして「一番短い4x」に合わせ、「セット完了」を押せ。");
+    updateGameState();
   }
 
   function rotateLens() {
@@ -427,20 +428,18 @@
     currentStep = 1;
     document.getElementById('panel-prep').classList.add('hidden');
     document.getElementById('panel-main').classList.remove('hidden');
-    msgBoard("⚠️【STEP 1】横から見て、粗動ねじでレンズを極限まで近づけよ！");
     updateStagePosition();
     updateVisuals();
+    updateGameState();
   }
 
   function updateStagePosition() {
-    const settings = DEVICE_SETTINGS[currentDevice];
-    const stageTop = settings.stageBaseTop - (50 - distance) * settings.stageMultiplier; 
-    document.getElementById('stage-obj').style.top = stageTop + "px";
+    const stagePos = 10 + (50 - distance) * 2.8; 
+    document.getElementById('stage-obj').style.bottom = stagePos + "px";
   }
 
   function moveStage(dx, dy) {
     if (isGameOver || currentStep < 2) return;
-    
     slideX += dx; slideY += dy;
     
     if (slideX > 100) slideX = 100;
@@ -448,27 +447,131 @@
     if (slideY > 100) slideY = 100;
     if (slideY < -100) slideY = -100;
     
-    checkMagAvailability();
+    updateGameState();
     updateVisuals();
   }
-  
-  function checkMagAvailability() {
-    if (document.getElementById('eye-view').style.display !== 'flex') return;
+
+  function switchTo10x() {
+    if (Math.abs(slideX) > 40 || Math.abs(slideY) > 40) {
+      gameOver("❌【見失った！】対象を視野の中央付近に置かずに倍率を上げたため、視野外に消え去りました！"); return;
+    }
+
+    currentStep = 3;
+    document.getElementById('btn-to-10x').classList.add('hidden');
     
+    currentLensType = 1;
+    const lensEl = document.getElementById('active-lens');
+    lensEl.className = 'lens-type-1';
+    lensEl.innerText = '10x';
+
+    distance += (Math.random() < 0.5 ? 1 : -1); 
+    updateStagePosition();
+    updateVisuals();
+    updateGameState();
+  }
+
+  function switchTo40x() {
+    if (Math.abs(slideX) > 10 || Math.abs(slideY) > 10) {
+      gameOver("❌【見失った！】対象を『ど真ん中』に置かずに400倍にしたため、視野外に消え去りました！"); return;
+    }
+
+    currentStep = 4;
+    document.getElementById('btn-to-40x').classList.add('hidden');
+    
+    currentLensType = 2;
+    const lensEl = document.getElementById('active-lens');
+    lensEl.className = 'lens-type-2';
+    lensEl.innerText = '40x';
+
+    distance += (Math.random() < 0.5 ? 1 : -1); 
+    updateStagePosition();
+    updateVisuals();
+    updateGameState();
+  }
+
+  function moveFocus(val, type) {
+    if (isGameOver) return;
+    const isEyeView = document.getElementById('eye-view').style.display === 'flex';
+
+    if (isEyeView && val < 0 && type === 1) { 
+        gameOver("❌【一発免停】覗きながら粗動ねじで近づけましたね？衝突事故です！"); return; 
+    }
+    
+    if (currentStep >= 3 && type === 1) { 
+        gameOver("❌【一発免停】高倍率で粗動ねじを回しましたね！？大きく動きすぎてピントを完全に見失う、またはレンズが激突する危険な操作です！"); return; 
+    }
+
+    distance += val;
+    
+    // 激突判定
+    if (distance <= crashLimits[currentLensType]) { 
+        distance = crashLimits[currentLensType]; 
+        updateStagePosition(); updateVisuals(); 
+        gameOver("❌【一発免停】ガシャン！レンズがプレパラートに衝突し破損しました！"); return; 
+    }
+
+    if (distance > 50) { distance = 50; }
+    
+    updateStagePosition();
+    updateVisuals();
+    updateGameState();
+  }
+
+  function switchView(mode) {
+    if (isGameOver) return;
+    if (mode === 'eye') {
+      if (currentStep === 1 && distance > 12) { alert("まだ遠すぎます！横から見て極限まで近づけて！"); return; }
+      
+      if (currentStep < 2) currentStep = 2; 
+      
+      document.getElementById('side-view').style.display = 'none';
+      document.getElementById('eye-view').style.display = 'flex';
+      document.getElementById('btn-eye').disabled = true;
+      document.getElementById('btn-side').disabled = false;
+      document.getElementById('btn-side').classList.remove('action');
+    } else {
+      document.getElementById('side-view').style.display = 'flex';
+      document.getElementById('eye-view').style.display = 'none';
+      document.getElementById('btn-eye').disabled = false;
+      document.getElementById('btn-side').disabled = true;
+    }
+    updateGameState();
+  }
+
+  // ★ UI状態とメッセージを100%管理するセントラル制御システム
+  function updateGameState() {
+    if (isGameOver) return;
+    
+    const isEyeView = document.getElementById('eye-view').style.display === 'flex';
     const focusDist = Math.abs(distance - targetDistance);
-    const posDist = Math.abs(slideX) <= 50 && Math.abs(slideY) <= 50;
+    const posDist = Math.abs(slideX) <= 40 && Math.abs(slideY) <= 40;
     const posStrict = Math.abs(slideX) <= 10 && Math.abs(slideY) <= 10; 
     
     const btn10x = document.getElementById('btn-to-10x');
     const btn40x = document.getElementById('btn-to-40x');
 
-    if (currentStep === 2) {
+    if (currentStep === 0) {
+      msgBoard("【準備】プレパラートを置き、一番短いレンズ(4x)をセットせよ。");
+      document.getElementById('status-board').className = '';
+    } 
+    else if (currentStep === 1) {
+      if (distance <= 12) { 
+        msgBoard("⭕【OK】極限まで接近しました！「接眼レンズを覗く」に切り替えてください。");
+        document.getElementById('status-board').className = 'success';
+        document.getElementById('btn-eye').disabled = false;
+      } else {
+        msgBoard("⚠️【STEP 1】横から見て、粗動ねじでレンズを極限まで近づけよ！");
+        document.getElementById('status-board').className = '';
+        document.getElementById('btn-eye').disabled = true; 
+      }
+    } 
+    else if (currentStep === 2) {
+      if (!isEyeView) return; // 覗いていない時はメッセージ更新保留
       btn10x.classList.remove('hidden');
       if (focusDist <= 1) { 
          btn10x.disabled = false;
          btn10x.innerText = "🔍 【STEP 3】100倍(対物10x)に切り替える";
          btn10x.className = "op-btn highlight";
-         
          if (posDist) { 
             msgBoard("⭕【OK】対象が見えました！紫のボタンを押して「100倍」に切り替えてください。");
             document.getElementById('status-board').className = 'success';
@@ -480,15 +583,20 @@
          btn10x.disabled = true;
          btn10x.innerText = "🔒 100倍切替（ピントを合わせよ）";
          btn10x.className = "op-btn";
-         
-         if (distance < targetDistance) {
-           msgBoard("【STEP 2】最初はぼんやり見えます。微動ねじを「遠ざける」方向に回し、はっきり見える位置を探せ。");
+         if (distance > 50) {
+            msgBoard("⚠️【警告】遠ざけすぎです。これ以上回してもピントは合いません。近づけ直してください。");
+            document.getElementById('status-board').className = 'alert';
+         } else if (distance < targetDistance) {
+            msgBoard("【STEP 2】最初はぼんやり見えます。微動ねじを「遠ざける」方向に回し、はっきり見える位置を探せ。");
+            document.getElementById('status-board').className = '';
          } else {
-           msgBoard("【STEP 2】遠ざけすぎました！ピントが合っていません。「近づける」方向にねじを回して戻してください。");
+            msgBoard("【STEP 2】遠ざけすぎました！ピントが合っていません。「近づける」方向にねじを回して戻してください。");
+            document.getElementById('status-board').className = '';
          }
-         document.getElementById('status-board').className = '';
       }
-    } else if (currentStep === 3) {
+    } 
+    else if (currentStep === 3) {
+      if (!isEyeView) return; 
       if (currentMode === 1) { 
         btn40x.classList.add('hidden');
         if (focusDist === 0 && posDist) {
@@ -507,7 +615,6 @@
            btn40x.disabled = false;
            btn40x.innerText = "🔍 【STEP 4】400倍(対物40x)に切り替える";
            btn40x.className = "op-btn danger highlight";
-           
            if (posStrict) { 
               msgBoard("⭕【OK】100倍のピントが合いました！対象を「ど真ん中」にしてから、赤ボタンで400倍に切り替えよ！");
               document.getElementById('status-board').className = 'success';
@@ -519,98 +626,15 @@
            btn40x.disabled = true;
            btn40x.innerText = "🔒 400倍切替（ピントを完璧に合わせよ）";
            btn40x.className = "op-btn";
-           msgBoard("【STEP 3】100倍になりピントが少しズレました。微動ねじでピントを完璧に合わせよ！");
+           msgBoard("【STEP 3】100倍になりピントが少しズレました。微動ねじでピントを完璧に合わせよ！(粗動は免停)");
            document.getElementById('status-board').className = 'alert';
         }
       }
-    }
-  }
-
-  function switchTo10x() {
-    if (Math.abs(slideX) > 50 || Math.abs(slideY) > 50) {
-      gameOver("❌【見失った！】対象を視野の中央付近に置かずに倍率を上げたため、視野外に消え去りました！"); return;
-    }
-
-    currentStep = 3;
-    document.getElementById('btn-to-10x').classList.add('hidden');
-    
-    currentLensType = 1;
-    const lensEl = document.getElementById('active-lens');
-    lensEl.className = 'lens-type-1';
-    lensEl.innerText = '10x';
-
-    distance += (Math.random() < 0.5 ? 1 : -1); 
-    
-    checkMagAvailability();
-    updateStagePosition();
-    updateVisuals();
-  }
-
-  function switchTo40x() {
-    if (Math.abs(slideX) > 10 || Math.abs(slideY) > 10) {
-      gameOver("❌【見失った！】対象を『ど真ん中』に置かずに400倍にしたため、視野外に消え去りました！"); return;
-    }
-
-    currentStep = 4;
-    document.getElementById('btn-to-40x').classList.add('hidden');
-    
-    currentLensType = 2;
-    const lensEl = document.getElementById('active-lens');
-    lensEl.className = 'lens-type-2';
-    lensEl.innerText = '40x';
-
-    distance += (Math.random() < 0.5 ? 1 : -1); 
-    msgBoard("⚠️【STEP 4】最高倍率400倍！さらに暗くなります！「微動ねじ」だけでピントを合わせよ！粗動ねじは一発免停！");
-    document.getElementById('status-board').className = 'alert';
-    
-    checkMagAvailability();
-    updateStagePosition();
-    updateVisuals();
-  }
-
-  function moveFocus(val, type) {
-    if (isGameOver) return;
-    const isEyeView = document.getElementById('eye-view').style.display === 'flex';
-
-    if (isEyeView && val < 0 && type === 1) { 
-        gameOver("❌【一発免停】覗きながら粗動ねじで近づけましたね？衝突事故です！"); return; 
-    }
-    
-    if (currentStep >= 3 && type === 1) { 
-        gameOver("❌【一発免停】高倍率で粗動ねじを回しましたね！？大きく動きすぎてピントを完全に見失う、またはレンズが激突する危険な操作です！"); return; 
-    }
-
-    distance += val;
-    
-    const currentLimits = DEVICE_SETTINGS[currentDevice].crashLimits;
-    if (distance <= currentLimits[currentLensType]) { 
-        distance = currentLimits[currentLensType]; 
-        updateStagePosition(); updateVisuals(); 
-        gameOver("❌【一発免停】ガシャン！レンズがプレパラートに衝突し破損しました！"); return; 
-    }
-
-    if (distance > 50) {
-       distance = 50;
-       msgBoard("⚠️【警告】遠ざけすぎです。これ以上回してもピントは合いません。近づけ直してください。");
-       document.getElementById('status-board').className = 'alert';
-       updateStagePosition();
-       updateVisuals();
-       return;
-    }
-    
-    if (currentStep === 1 && distance <= 12) { 
-      msgBoard("⭕【OK】極限まで接近しました！「接眼レンズを覗く」に切り替えてください。");
-      document.getElementById('status-board').className = 'success';
-      document.getElementById('btn-eye').disabled = false;
-    } else if (currentStep === 1 && distance > 12) {
-      msgBoard("⚠️【STEP 1】横から見て、粗動ねじでレンズを極限まで近づけよ！");
-      document.getElementById('status-board').className = '';
-      document.getElementById('btn-eye').disabled = true; 
-    }
-
-    if (currentStep === 4) {
-      if (Math.abs(distance - targetDistance) === 0) {
-         if (Math.abs(slideX) <= 10 && Math.abs(slideY) <= 10) {
+    } 
+    else if (currentStep === 4) {
+      if (!isEyeView) return; 
+      if (focusDist === 0) {
+         if (posStrict) {
              msgBoard("⭕【完璧】400倍のピントが合いました！絞りを開いて明るさを調整し、試験終了を押してください。");
              document.getElementById('status-board').className = 'success';
          } else {
@@ -621,32 +645,6 @@
          msgBoard("⚠️【STEP 4】400倍は激シビアです！微動ねじだけで慎重にピントを探れ！");
          document.getElementById('status-board').className = 'alert';
       }
-    }
-
-    checkMagAvailability();
-    updateStagePosition();
-    updateVisuals();
-  }
-
-  function switchView(mode) {
-    if (isGameOver) return;
-    if (mode === 'eye') {
-      if (currentStep === 1 && distance > 12) { alert("まだ遠すぎます！横から見て極限まで近づけて！"); return; }
-      
-      if (currentStep < 2) currentStep = 2; 
-      
-      document.getElementById('side-view').style.display = 'none';
-      document.getElementById('eye-view').style.display = 'flex';
-      document.getElementById('btn-eye').disabled = true;
-      document.getElementById('btn-side').disabled = false;
-      document.getElementById('btn-side').classList.remove('action');
-      
-      checkMagAvailability();
-    } else {
-      document.getElementById('side-view').style.display = 'flex';
-      document.getElementById('eye-view').style.display = 'none';
-      document.getElementById('btn-eye').disabled = false;
-      document.getElementById('btn-side').disabled = true;
     }
   }
 
@@ -666,22 +664,12 @@
       let rawBlur = Math.abs(distance - targetDistance) * blurMultiplier;
       let blur = Math.min(rawBlur, 15); 
       
-      const irisVal = parseInt(document.getElementById('iris').value, 10);
-      let baseBrightness = 1.0;
-      let irisFactor = 0;
-
-      if (currentStep < 3) {
-        baseBrightness = 0.8;
-        irisFactor = (irisVal / 100) * 0.4;
-      } else if (currentStep === 3) {
-        baseBrightness = 0.4;
-        irisFactor = (irisVal / 100) * 0.6;
-      } else {
-        baseBrightness = 0.1;
-        irisFactor = (irisVal / 100) * 0.8;
-      }
+      const irisVal = parseInt(document.getElementById('iris').value);
+      let baseBrightness = 1.0; 
+      if (currentStep === 3) baseBrightness = 0.4;
+      if (currentStep >= 4) baseBrightness = 0.1;
+      const brightness = baseBrightness + (irisVal / 100);
       
-      const brightness = baseBrightness + irisFactor;
       slideGroup.style.filter = `blur(${blur}px) brightness(${brightness})`;
     }
   }
@@ -693,7 +681,7 @@
       let confetti = document.createElement('div');
       confetti.className = 'confetti';
       confetti.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-      confetti.style.left = Math.random() * 100 + '%';
+      confetti.style.left = Math.random() * 100 + 'vw';
       confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
       confetti.style.animationDelay = Math.random() * 2 + 's';
       container.appendChild(confetti);
@@ -703,7 +691,7 @@
   function gameOver(txt) {
     isGameOver = true;
     if(timerId) clearInterval(timerId);
-    document.getElementById('status-board').innerText = txt;
+    msgBoard(txt);
     document.getElementById('status-board').className = 'alert';
     
     document.querySelectorAll('.op-btn').forEach(b => b.disabled = true);
@@ -727,10 +715,10 @@
     
     if (currentStep < requiredStep) { alert(`❌ 不合格！まだ目標倍率「${targetMag}」での詳細な観察が終わっていません！`); return; }
 
-    const iris = parseInt(document.getElementById('iris').value, 10);
+    const iris = document.getElementById('iris').value;
     const focusOK = Math.abs(distance - targetDistance) === 0;
     
-    const posOK = currentMode === 1 ? (Math.abs(slideX) <= 50 && Math.abs(slideY) <= 50) : (Math.abs(slideX) <= 10 && Math.abs(slideY) <= 10);
+    const posOK = currentMode === 1 ? (Math.abs(slideX) <= 40 && Math.abs(slideY) <= 40) : (Math.abs(slideX) <= 10 && Math.abs(slideY) <= 10);
     const irisOK = currentMode === 1 ? (iris >= 40 && iris <= 90) : (iris >= 80); 
     
     if (focusOK && irisOK && posOK) {
@@ -777,6 +765,9 @@
       alert(advice + " もう一度調整してください！");
     }
   }
+
+  // 初期化：ステータスボードのセット
+  updateGameState();
 
 </script>
 </body>

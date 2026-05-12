@@ -29,7 +29,7 @@
   
   #timer-board { font-size: 22px; color: #d32f2f; font-weight: bold; margin-bottom: 10px; background: #ffebee; padding: 8px; border-radius: 8px; border: 2px solid #ef5350; text-align: center;}
   
-  /* ★ 高さを76pxに完全固定し、メッセージが変わっても画面がガタつかないようにする */
+  /* レイアウトガタつき防止：高さを76pxで完全固定 */
   #status-board { background: #333; color: #fff; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; border-left: 8px solid #ff8c00; transition: 0.3s; font-size: 14px; height: 76px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-align: left; line-height: 1.4; overflow: hidden;}
   
   .alert { border-left-color: #d32f2f !important; background: #fff5e6 !important; color: #d32f2f !important; }
@@ -50,8 +50,7 @@
   .slide-set { opacity: 1 !important; }
   
   #eye-view { display: none; width: 100%; height: 100%; background: black; align-items: center; justify-content: center; }
-  /* 倒立像のコア：180度回転 */
-  #eyepiece-circle { width: 280px; height: 280px; background: white; border-radius: 50%; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; transform: rotate(180deg); }
+  #eyepiece-circle { width: 280px; height: 280px; background: white; border-radius: 50%; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; transform: rotate(180deg); transition: width 0.3s, height 0.3s;}
 
   .control-group { margin-bottom: 10px; padding: 12px; background: #fdfdfd; border: 1px solid #eee; border-radius: 8px; text-align: left; font-size: 14px;}
   .btn-box { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -83,14 +82,11 @@
   .confetti { position: absolute; font-size: 24px; animation: fall 3s infinite linear; z-index: 1;}
   @keyframes fall { 0% { transform: translateY(-50px) rotate(0deg); opacity: 1;} 100% { transform: translateY(150vh) rotate(360deg); opacity: 0;} }
 
-  /* =========================================
-     ★ 横向き（ランドスケープ）へのレスポンシブ最適化
-     ========================================= */
+  /* 横向き（ランドスケープ）へのレスポンシブ最適化 */
   @media (orientation: landscape) {
     #app-container { max-width: 900px; padding: 15px; }
     .simulator-layout { display: flex; gap: 15px; align-items: stretch; }
     .simulator-layout > .left-col { flex: 1; min-width: 0; }
-    /* 操作パネル側（右側）だけ独立スクロール */
     .simulator-layout > .right-col { flex: 1; min-width: 300px; display: flex; flex-direction: column; overflow-y: auto; max-height: calc(100vh - 150px); padding-right: 5px;}
     #view-area { margin-bottom: 0; height: calc(100vh - 180px); min-height: 250px;}
     #eyepiece-circle { width: 220px; height: 220px; }
@@ -197,7 +193,7 @@
           </div>
           <div id="eye-view">
             <div id="eyepiece-circle">
-              <div id="slide-group" style="position:absolute; width:100%; height:100%; transition: transform 0.3s, filter 0.3s; transform-origin: center;"></div>
+              <div id="slide-group" style="position:absolute; width:100%; height:100%; transition: transform 0.3s, filter 0.3s; transform-origin: 50% 50%;"></div>
             </div>
           </div>
         </div>
@@ -303,18 +299,17 @@
   let currentMode = 1;
   let distance = 50; 
   let targetDistance = 15; 
-  let slideX = 60, slideY = 60; // 矢印で探させる初期位置
+  let slideX = 60, slideY = 60; 
   let currentLensType = 1; 
   let isSlideSet = false, isGameOver = false, currentStep = 0;
   let timeLeft = 180, timerId = null;
   
-  // ★ 超シビアなレンズ激突限界設定（targetDistance=15 に対して）
-  const crashLimits = [0, 8, 13]; // 4xは0, 10xは8, 40xは13（14がボヤけ、13で激突）
+  const crashLimits = [0, 8, 13]; 
   
   const quizzes = [
     { q: "倍率を上げる前に行うことは？", a: ["対象を視野の中央にする", "絞りを閉じる"], c: 0 },
     { q: "最初に見るべき対物レンズは？", a: ["10倍・40倍（長い）", "4倍（短い）"], c: 1 },
-    { q: "顕微鏡で見える像（見え方）の特徴は？", a: ["上下左右が逆（倒立像）", "そのまま（正立像）"], c: 0 },
+    { q: "顕微鏡で見える像の特徴は？", a: ["上下左右が逆（倒立像）", "そのまま（正立像）"], c: 0 },
     { q: "高倍率（400倍等）でピントを合わせる時は？", a: ["粗動ねじを使う", "微動ねじだけを使う"], c: 1 }
   ];
 
@@ -423,8 +418,7 @@
     
     const focusDist = Math.abs(distance - targetDistance);
     
-    // ★ 視野の厳格な計算：transform順序修正に対応
-    const posDist = Math.abs(slideX) <= 40 && Math.abs(slideY) <= 40;
+    const posDist = Math.abs(slideX) <= 50 && Math.abs(slideY) <= 50;
     const posStrict = Math.abs(slideX) <= 10 && Math.abs(slideY) <= 10; 
     
     const btn10x = document.getElementById('btn-to-10x');
@@ -495,7 +489,7 @@
   }
 
   function switchTo10x() {
-    if (Math.abs(slideX) > 40 || Math.abs(slideY) > 40) {
+    if (Math.abs(slideX) > 50 || Math.abs(slideY) > 50) {
       gameOver("❌【見失った！】対象を視野の中央付近に置かずに倍率を上げたため、視野外に消え去りました！"); return;
     }
 
@@ -532,6 +526,9 @@
     
     updateStagePosition();
     updateVisuals();
+    
+    // ★ 判定の即時更新漏れを修正
+    checkMagAvailability();
   }
 
   function moveFocus(val, type) {
@@ -548,7 +545,6 @@
 
     distance += val;
     
-    // ★ 各レンズのギリギリ限界ライン（crashLimits）での激突判定
     if (distance <= crashLimits[currentLensType]) { 
         distance = crashLimits[currentLensType]; 
         updateStagePosition(); updateVisuals(); 
@@ -564,7 +560,6 @@
        return;
     }
     
-    // STEP1のクリア条件：距離12以下まで近づける（4xの限界は0なので安全）
     if (currentStep === 1 && distance <= 12) { 
       msgBoard("⭕【OK】極限まで接近しました！「接眼レンズを覗く」に切り替えてください。");
       document.getElementById('status-board').className = 'success';
@@ -624,7 +619,6 @@
     
     const slideGroup = document.getElementById('slide-group');
     if (slideGroup) {
-      // ★ スケール（拡大）してから移動（ズレ）させることで、高倍率時の「少しの操作で大きく動く」シビアな操作感を完全再現
       slideGroup.style.transform = `scale(${scale}) translate(${slideX}px, ${slideY}px)`;
       
       let blurMultiplier = 3;
@@ -688,7 +682,7 @@
     const iris = document.getElementById('iris').value;
     const focusOK = Math.abs(distance - targetDistance) === 0;
     
-    const posOK = currentMode === 1 ? (Math.abs(slideX) <= 40 && Math.abs(slideY) <= 40) : (Math.abs(slideX) <= 10 && Math.abs(slideY) <= 10);
+    const posOK = currentMode === 1 ? (Math.abs(slideX) <= 50 && Math.abs(slideY) <= 50) : (Math.abs(slideX) <= 10 && Math.abs(slideY) <= 10);
     const irisOK = currentMode === 1 ? (iris >= 40 && iris <= 90) : (iris >= 80); 
     
     if (focusOK && irisOK && posOK) {

@@ -2,19 +2,16 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<!-- モバイル対応強化：ピンチズームやダブルタップズームを禁止 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>顕微鏡・運転免許センター（ケンメン）</title>
+<title>顕微鏡・操作免許センター</title>
 
-<!-- UDフォントの読み込み -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
-  /* 長押しによるテキスト選択やメニュー表示を禁止 */
   body { 
-    font-family: 'BIZ UDGothic', "UD デジタル 教科書体 N-R", sans-serif; 
+    font-family: 'BIZ UDGothic', sans-serif; 
     background-color: #f0f7ff; color: #333; line-height: 1.6; margin: 0; padding: 15px; 
     -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
@@ -27,13 +24,13 @@
 
   .menu-btn { display: block; width: 100%; padding: 16px; margin-bottom: 15px; font-size: 18px; font-weight: bold; font-family: inherit; border-radius: 10px; border: none; cursor: pointer; color: white; transition: 0.2s; }
   .menu-btn:hover { filter: brightness(1.1); transform: scale(1.02); }
-  #btn-mode1 { background: #005bac; } #btn-mode2 { background: #ff8c00; } #btn-mode3 { background: #555555; }
+  #btn-mode1 { background: #005bac; } #btn-mode2 { background: #ff8c00; } #btn-mode3 { background: #555555; } #btn-tutorial { background: #4caf50; }
   .hidden { display: none !important; }
   
   #timer-board { font-size: 22px; color: #d32f2f; font-weight: bold; margin-bottom: 10px; background: #ffebee; padding: 8px; border-radius: 8px; border: 2px solid #ef5350; text-align: center;}
   
-  /* レイアウトガタつき完全防止：高さを固定 */
-  #status-board { background: #333; color: #fff; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; border-left: 8px solid #ff8c00; transition: 0.3s; font-size: 14px; min-height: 70px; display: flex; align-items: center; justify-content: center; text-align: left; line-height: 1.4;}
+  /* ★ 高さを76pxに完全固定し、メッセージが変わっても画面がガタつかないようにする */
+  #status-board { background: #333; color: #fff; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; border-left: 8px solid #ff8c00; transition: 0.3s; font-size: 14px; height: 76px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; text-align: left; line-height: 1.4; overflow: hidden;}
   
   .alert { border-left-color: #d32f2f !important; background: #fff5e6 !important; color: #d32f2f !important; }
   .success { border-left-color: #005bac !important; background: #e6f0ff !important; color: #005bac !important; }
@@ -44,10 +41,8 @@
   #side-view { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; position: relative; }
   #lens-wrapper { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 5; text-align: center; cursor: pointer; }
   #revolver-base { width: 60px; height: 15px; background: #444; border-radius: 10px 10px 0 0; margin: 0 auto;}
-  #active-lens { width: 28px; border: 2px solid #222; border-radius: 0 0 5px 5px; color: white; font-size: 12px; font-weight: bold; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; margin: 0 auto; transition: all 0.3s; font-family: sans-serif;}
-  .lens-type-0 { height: 35px; background: #888; } 
-  .lens-type-1 { height: 55px; background: #ffcc00; color: black !important; } 
-  .lens-type-2 { height: 85px; background: #d32f2f; } 
+  #active-lens { width: 28px; border: 2px solid #222; border-radius: 0 0 5px 5px; color: white; font-size: 12px; font-weight: bold; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; margin: 0 auto; transition: all 0.3s;}
+  .lens-type-0 { height: 35px; background: #888; } .lens-type-1 { height: 55px; background: #ffcc00; color: black !important; } .lens-type-2 { height: 85px; background: #d32f2f; } 
   .lens-guide { font-size: 12px; font-weight: bold; color: #005bac; margin-top: 5px; background: rgba(255,255,255,0.8); padding: 2px 5px; border-radius: 4px;}
 
   #stage-obj { width: 180px; height: 12px; background: #444; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); transition: bottom 0.2s linear; }
@@ -55,7 +50,8 @@
   .slide-set { opacity: 1 !important; }
   
   #eye-view { display: none; width: 100%; height: 100%; background: black; align-items: center; justify-content: center; }
-  #eyepiece-circle { width: 280px; height: 280px; background: white; border-radius: 50%; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; transform: rotate(180deg); transition: width 0.3s, height 0.3s;}
+  /* 倒立像のコア：180度回転 */
+  #eyepiece-circle { width: 280px; height: 280px; background: white; border-radius: 50%; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; transform: rotate(180deg); }
 
   .control-group { margin-bottom: 10px; padding: 12px; background: #fdfdfd; border: 1px solid #eee; border-radius: 8px; text-align: left; font-size: 14px;}
   .btn-box { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -68,50 +64,45 @@
   
   @keyframes pulse { 0% { filter: brightness(1); } 50% { filter: brightness(1.3); } 100% { filter: brightness(1); } }
   
-  /* iOSでも押しやすいスライダーデザイン */
   input[type="range"] { -webkit-appearance: none; width: 100%; height: 30px; background: transparent; cursor: pointer; }
   input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #005bac; cursor: pointer; margin-top: -8px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);}
-  input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #ccc; border-radius: 4px; }
+  input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: #ccc; border-radius: 4px; }
   
   .rescue-box { text-align: left; background: #fff5e6; border-left: 5px solid #ff8c00; padding: 15px; margin-bottom: 15px; }
   
-  /* 免許証デザイン */
+  /* 認定証デザイン */
   #license-screen { text-align: center; position: relative; overflow: hidden; padding: 20px 0;}
   .license-title { font-size: 28px; font-weight: bold; background: linear-gradient(45deg, #FF1493, #3f51b5, #00bcd4, #4caf50, #ff9800); -webkit-background-clip: text; color: transparent; animation: rainbow 3s infinite linear; margin-top:0;}
-  
   .license-card { width: 90%; margin: 0 auto; border-radius: 15px; padding: 25px; text-align: left; position: relative; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.3); font-size: 16px;}
   .license-card::before { content: "🔬"; position: absolute; top: 15px; right: 20px; font-size: 40px; opacity: 0.8; }
-  
   .card-bronze { background: linear-gradient(135deg, #eceff1, #cfd8dc); border: 3px solid #b0bec5; }
-  .card-silver { background: linear-gradient(135deg, #ffffff, #e0e0e0); border: 3px solid #9e9e9e; box-shadow: 0 0 15px rgba(158,158,158,0.6); }
-  .card-gold { background: linear-gradient(135deg, #fffde7, #fff59d, #ffd54f, #fffde7); background-size: 200% 200%; border: 4px solid #fbc02d; animation: shine 3s infinite linear; box-shadow: 0 0 25px rgba(251, 192, 45, 0.8), inset 0 0 20px rgba(255,255,255,0.8); }
-  
+  .card-silver { background: linear-gradient(135deg, #ffffff, #e0e0e0); border: 3px solid #9e9e9e;}
+  .card-gold { background: linear-gradient(135deg, #fffde7, #fff59d, #ffd54f, #fffde7); background-size: 200% 200%; border: 4px solid #fbc02d; animation: shine 3s infinite linear;}
   @keyframes shine { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
   @keyframes rainbow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-  
-  /* スマホの縦長画面でも最後まで落ちるように150vhに設定 */
   .confetti { position: absolute; font-size: 24px; animation: fall 3s infinite linear; z-index: 1;}
   @keyframes fall { 0% { transform: translateY(-50px) rotate(0deg); opacity: 1;} 100% { transform: translateY(150vh) rotate(360deg); opacity: 0;} }
 
-  /* 横向き（ランドスケープ）へのレスポンシブ対応 */
+  /* =========================================
+     ★ 横向き（ランドスケープ）へのレスポンシブ最適化
+     ========================================= */
   @media (orientation: landscape) {
     #app-container { max-width: 900px; padding: 15px; }
-    .simulator-layout { display: flex; gap: 15px; align-items: flex-start; }
+    .simulator-layout { display: flex; gap: 15px; align-items: stretch; }
     .simulator-layout > .left-col { flex: 1; min-width: 0; }
-    .simulator-layout > .right-col { flex: 1; min-width: 300px; display: flex; flex-direction: column; }
-    #view-area { margin-bottom: 0; height: 350px;}
+    /* 操作パネル側（右側）だけ独立スクロール */
+    .simulator-layout > .right-col { flex: 1; min-width: 300px; display: flex; flex-direction: column; overflow-y: auto; max-height: calc(100vh - 150px); padding-right: 5px;}
+    #view-area { margin-bottom: 0; height: calc(100vh - 180px); min-height: 250px;}
+    #eyepiece-circle { width: 220px; height: 220px; }
   }
 
   @media (orientation: landscape) and (max-height: 500px) {
     body { padding: 5px; }
     #app-container { padding: 10px; }
     h1 { font-size: 18px; margin-bottom: 5px; padding-bottom: 5px;}
-    #status-board { padding: 6px 10px; font-size: 12px; margin-bottom: 10px; min-height: 50px;}
-    #view-area { height: 220px; }
-    #eyepiece-circle { width: 200px; height: 200px; }
+    #status-board { padding: 6px 10px; font-size: 12px; margin-bottom: 10px; height: 50px;}
     .control-group { padding: 8px; margin-bottom: 8px;}
     button.op-btn { padding: 6px 4px; font-size: 12px; }
-    .btn-box { gap: 4px; }
     input[type="range"] { height: 20px; }
   }
 </style>
@@ -119,12 +110,38 @@
 <body>
 
 <div id="app-container">
-  <h1>🔬 顕微鏡・運転免許センター</h1>
+  <h1>🔬 顕微鏡・操作免許センター</h1>
   
   <div id="menu-screen">
-    <button class="menu-btn" id="btn-mode1" onclick="startMode(1)">🔰 【新規取得】 1年生 / タマネギ観察 (〜100倍)</button>
-    <button class="menu-btn" id="btn-mode2" onclick="startMode(2)">⏱️ 【クイック更新】 2・3年生 / ミドリムシ観察 (〜400倍)</button>
-    <button class="menu-btn" id="btn-mode3" onclick="startMode(3)">🆘 【レスキュー】 操作ガイド / AI相談</button>
+    <button class="menu-btn" id="btn-tutorial" onclick="startTutorial()">🔰 操作チュートリアルを読む</button>
+    <button class="menu-btn" id="btn-mode1" onclick="startMode(1)">🔰 【新規認定】 1年生 / タマネギ観察 (〜100倍)</button>
+    <button class="menu-btn" id="btn-mode2" onclick="startMode(2)">⏱️ 【操作更新】 2・3年生 / ミドリムシ観察 (〜400倍)</button>
+    <button class="menu-btn" id="btn-mode3" onclick="startMode(3)">🆘 【AIレスキュー】 トラブルガイド</button>
+  </div>
+
+  <div id="tutorial-screen" class="hidden">
+    <h2 style="color: #4caf50;">🔰 顕微鏡の絶対ルール</h2>
+    
+    <div class="rescue-box" style="border-color:#4caf50;">
+      <h3 style="margin-top:0; color:#2e7d32;">① プレパラートの動かし方</h3>
+      <p>顕微鏡の視野は<strong>「上下左右が逆（倒立像）」</strong>になります。<br>
+      💡 <strong>鉄則：</strong>見たい対象が視野の「左上」に見えているなら、プレパラートも「左・上（奥）」へ動かします。<strong>「見えている方向へ追いかける」</strong>イメージで操作しましょう！</p>
+    </div>
+    
+    <div class="rescue-box" style="border-color:#4caf50;">
+      <h3 style="margin-top:0; color:#2e7d32;">② ピント合わせの順序</h3>
+      <p>1. まず「横から見て」粗動ねじでレンズを極限まで近づけます。<br>
+      2. 次に「覗きながら」ねじを<strong>遠ざける方向</strong>に回してピントを探します。</p>
+    </div>
+
+    <div class="rescue-box" style="border-color:#d32f2f;">
+      <h3 style="margin-top:0; color:#d32f2f;">🚫 一発免停（破損）になる操作</h3>
+      <p>・覗きながら「近づける」方向にねじを回す<br>
+      ・100倍、400倍の高倍率で「粗動ねじ（大きく動く）」を触る<br>
+      ・対象を「ど真ん中」に置かないまま高倍率に切り替える（見失います）</p>
+    </div>
+    
+    <button class="menu-btn" style="background:#555; margin-top:20px;" onclick="location.reload()">トップに戻る</button>
   </div>
 
   <div id="quiz-screen" class="hidden">
@@ -143,25 +160,20 @@
       <p>① 横から見て、レンズをギリギリまで近づける。<br>② 覗きながら「遠ざける方向」にねじを回す。</p>
     </div>
     <div class="rescue-box">
-      <h3 style="margin-top:0; color:#d32f2f;">❓ 動かしたい方向と逆に動く！</h3>
-      <p>顕微鏡の視野は**「倒立像（上下左右が逆）」**です。見たいものを上に動かしたい時は、プレパラートを手前に引きましょう。</p>
-    </div>
-    <div class="rescue-box">
       <h3 style="margin-top:0; color:#d32f2f;">❓ 高倍率にしたら真っ暗 / 見えない</h3>
       <p>① 絞りを開いて光を多く入れる。<br>② 低倍率の時に対象を「ど真ん中」に置いていないと、高倍率では見失います。</p>
     </div>
-    <button class="menu-btn" style="background:#673ab7; margin-top:20px;" onclick="window.open('https://app.studypocket.ai/chat/template/17865', '_blank')">🤖 スタディポケットAIに写真を送って相談</button>
+    <button class="menu-btn" style="background:#673ab7; margin-top:20px;" onclick="window.open('https://app.studypocket.ai/', '_blank')">🤖 スタディポケットAIに相談する</button>
     <button class="menu-btn" style="background:#9e9e9e;" onclick="location.reload()">トップに戻る</button>
   </div>
 
-  <!-- ド派手な免許証発行画面 -->
   <div id="license-screen" class="hidden">
     <div id="confetti-container"></div>
-    <h2 class="license-title">🎉 講習修了・合格！ 🎉</h2>
+    <h2 class="license-title">🎉 操作技能 認定！ 🎉</h2>
     <div id="license-card" class="license-card card-bronze">
-      <h3 style="margin-top:0; border-bottom: 2px solid #333; padding-bottom:5px; font-size:20px;">顕微鏡操作 免許証</h3>
+      <h3 style="margin-top:0; border-bottom: 2px solid #333; padding-bottom:5px; font-size:20px;">顕微鏡操作 認定証</h3>
       <p><strong>氏名：</strong> 未来の科学者 殿</p>
-      <p><strong>ランク：</strong> <span id="license-rank" style="font-size:26px; font-weight:bold; color:#005bac;">ブロンズ免許</span> <span id="crown-icon"></span></p>
+      <p><strong>ランク：</strong> <span id="license-rank" style="font-size:26px; font-weight:bold; color:#005bac;">ブロンズ認定</span> <span id="crown-icon"></span></p>
       <p id="license-time-wrap" style="font-size:18px;"><strong>クリアタイム：</strong> <span id="license-time" style="font-size:22px; color:#d32f2f; font-weight:bold;">-</span> 秒</p>
       <p style="font-size:13px; color:#555; margin-top:15px; border-top: 1px dashed #999; padding-top:10px;">上記のとおり、安全かつ正確な顕微鏡操作の技能を有することを証明する。</p>
     </div>
@@ -185,7 +197,6 @@
           </div>
           <div id="eye-view">
             <div id="eyepiece-circle">
-              <!-- SVGを包むレイヤー -->
               <div id="slide-group" style="position:absolute; width:100%; height:100%; transition: transform 0.3s, filter 0.3s; transform-origin: center;"></div>
             </div>
           </div>
@@ -193,48 +204,43 @@
       </div>
 
       <div class="right-col">
-        <!-- 準備パネル -->
         <div id="panel-prep" class="control-group">
           <button class="op-btn action" id="btn-set-slide" onclick="setSlide()" style="width:100%; margin-bottom:10px;">① プレパラートを置く</button>
           <button class="op-btn danger" id="btn-lens-ok" onclick="completePrep()" style="width:100%;">② セット完了（点検）</button>
         </div>
 
-        <!-- 操作パネル -->
         <div id="panel-main" class="control-group hidden">
           <div class="btn-box" style="margin-bottom:10px;">
             <button class="op-btn action" id="btn-side" onclick="switchView('side')" disabled>横から見る</button>
             <button class="op-btn" id="btn-eye" onclick="switchView('eye')">レンズを覗く</button>
           </div>
           
-          <div style="margin-bottom: 10px;">
-            <button class="op-btn hidden" id="btn-to-10x" onclick="switchTo10x()" style="width:100%;">🔒 100倍切替（ピントを合わせよ）</button>
-            <button class="op-btn hidden" id="btn-to-40x" onclick="switchTo40x()" style="width:100%;">🔒 400倍切替（ピントを合わせよ）</button>
+          <div style="height: 45px; margin-bottom: 10px;">
+            <button class="op-btn hidden" id="btn-to-10x" onclick="switchTo10x()" style="width:100%; height:100%;">🔒 100倍切替（ピントを合わせよ）</button>
+            <button class="op-btn hidden" id="btn-to-40x" onclick="switchTo40x()" style="width:100%; height:100%;">🔒 400倍切替（ピントを合わせよ）</button>
           </div>
 
           <div style="display: flex; gap: 5px;">
-            <!-- ピント操作 -->
             <div style="flex: 1.2;">
-              <strong style="font-size:12px;">粗動ねじ（大きく動く）:</strong>
+              <strong style="font-size:12px;">ねじ（ピント合わせ）:</strong>
               <div class="btn-box" style="margin-bottom:5px;">
-                <button class="op-btn danger" onclick="moveFocus(-5, 1)">近づける</button>
-                <button class="op-btn action" onclick="moveFocus(5, 1)">遠ざける</button>
+                <button class="op-btn danger" onclick="moveFocus(-5, 1)">粗動 近</button>
+                <button class="op-btn action" onclick="moveFocus(5, 1)">粗動 遠</button>
               </div>
-              <strong style="font-size:12px;">微動ねじ（少し動く）:</strong>
               <div class="btn-box">
-                <button class="op-btn danger" onclick="moveFocus(-1, 0)">近づける</button>
-                <button class="op-btn action" onclick="moveFocus(1, 0)">遠ざける</button>
+                <button class="op-btn danger" onclick="moveFocus(-1, 0)">微動 近</button>
+                <button class="op-btn action" onclick="moveFocus(1, 0)">微動 遠</button>
               </div>
             </div>
-            <!-- プレパラート移動 -->
             <div style="flex: 1; text-align:center; border-left: 1px solid #ccc; padding-left: 5px;">
               <strong style="font-size:12px;">プレパラート移動<br>(倒立像注意):</strong>
               <div class="btn-box" style="justify-content: center; margin-bottom: 5px;">
                 <button class="op-btn" style="min-width:40px; font-size:12px;" onclick="moveStage(0, -10)">↑<br>奥へ</button>
               </div>
               <div class="btn-box" style="justify-content: center;">
-                <button class="op-btn" style="min-width:40px; font-size:12px;" onclick="moveStage(-10, 0)">←<br>左へ</button>
-                <button class="op-btn" style="min-width:40px; font-size:12px;" onclick="moveStage(0, 10)">↓<br>手前へ</button>
-                <button class="op-btn" style="min-width:40px; font-size:12px;" onclick="moveStage(10, 0)">→<br>右へ</button>
+                <button class="op-btn" style="min-width:40px; font-size:12px;" onclick="moveStage(-10, 0)">←<br>左</button>
+                <button class="op-btn" style="min-width:40px; font-size:12px;" onclick="moveStage(0, 10)">↓<br>手前</button>
+                <button class="op-btn" style="min-width:40px; font-size:12px;" onclick="moveStage(10, 0)">→<br>右</button>
               </div>
             </div>
           </div>
@@ -242,7 +248,7 @@
           <hr style="margin: 10px 0;">
           <strong>しぼり（明るさ調整）：</strong>
           <input type="range" id="iris" min="0" max="100" value="50" oninput="updateVisuals()">
-          <button class="op-btn action" id="btn-judge" onclick="judge()" style="width:100%; margin-top:10px; padding:15px; font-size:16px;">🏁 試験終了（合否判定）</button>
+          <button class="op-btn action" id="btn-judge" onclick="judge()" style="width:100%; margin-top:10px; padding:15px; font-size:16px;">🏁 操作試験 終了</button>
         </div>
       </div>
     </div>
@@ -250,7 +256,6 @@
 </div>
 
 <script>
-  // タマネギ細胞SVG
   const svgOnion = `
     <svg viewBox="-100 -100 200 200" style="width: 100%; height: 100%; overflow: visible;">
       <defs>
@@ -272,7 +277,6 @@
     </svg>
   `;
 
-  // ミドリムシSVG
   const svgEuglena = `
     <svg viewBox="-100 -100 200 200" style="width: 100%; height: 100%; overflow: visible;">
       <defs>
@@ -289,11 +293,9 @@
       <circle cx="40" cy="50" r="1.5" fill="#ccc" />
       <circle cx="-50" cy="40" r="1" fill="#bbb" />
       <circle cx="80" cy="-20" r="2" fill="#ddd" />
-      
       <use href="#euglena" x="80" y="-60" transform="scale(0.7) rotate(-45)" opacity="0.4" />
       <use href="#euglena" x="-70" y="-80" transform="scale(0.8) rotate(70)" opacity="0.4" />
       <use href="#euglena" x="120" y="100" transform="scale(0.6) rotate(120)" opacity="0.3" />
-      
       <use href="#euglena" x="0" y="0" transform="scale(1.4) rotate(25)" />
     </svg>
   `;
@@ -301,18 +303,25 @@
   let currentMode = 1;
   let distance = 50; 
   let targetDistance = 15; 
-  let slideX = 50, slideY = 50; 
+  let slideX = 60, slideY = 60; // 矢印で探させる初期位置
   let currentLensType = 1; 
   let isSlideSet = false, isGameOver = false, currentStep = 0;
   let timeLeft = 180, timerId = null;
+  
+  // ★ 超シビアなレンズ激突限界設定（targetDistance=15 に対して）
+  const crashLimits = [0, 8, 13]; // 4xは0, 10xは8, 40xは13（14がボヤけ、13で激突）
   
   const quizzes = [
     { q: "倍率を上げる前に行うことは？", a: ["対象を視野の中央にする", "絞りを閉じる"], c: 0 },
     { q: "最初に見るべき対物レンズは？", a: ["10倍・40倍（長い）", "4倍（短い）"], c: 1 },
     { q: "顕微鏡で見える像（見え方）の特徴は？", a: ["上下左右が逆（倒立像）", "そのまま（正立像）"], c: 0 },
-    { q: "高倍率（400倍等）でピントを合わせる時は？", a: ["粗動ねじを使う", "微動ねじだけを使う"], c: 1 },
-    { q: "ミドリムシを観察する時、光を感じる赤い点は？", a: ["眼点", "核"], c: 0 }
+    { q: "高倍率（400倍等）でピントを合わせる時は？", a: ["粗動ねじを使う", "微動ねじだけを使う"], c: 1 }
   ];
+
+  function startTutorial() {
+    document.getElementById('menu-screen').classList.add('hidden');
+    document.getElementById('tutorial-screen').classList.remove('hidden');
+  }
 
   function startMode(mode) {
     currentMode = mode;
@@ -414,16 +423,16 @@
     
     const focusDist = Math.abs(distance - targetDistance);
     
+    // ★ 視野の厳格な計算：transform順序修正に対応
     const posDist = Math.abs(slideX) <= 40 && Math.abs(slideY) <= 40;
-    const posStrict = Math.abs(slideX) <= 15 && Math.abs(slideY) <= 15; 
+    const posStrict = Math.abs(slideX) <= 10 && Math.abs(slideY) <= 10; 
     
     const btn10x = document.getElementById('btn-to-10x');
     const btn40x = document.getElementById('btn-to-40x');
 
-    // ★ STEP 2 (低倍率) の論理チェック
     if (currentStep === 2) {
+      btn10x.classList.remove('hidden');
       if (focusDist <= 1) { 
-         btn10x.classList.remove('hidden');
          btn10x.disabled = false;
          btn10x.innerText = "🔍 【STEP 3】100倍(対物10x)に切り替える";
          btn10x.className = "op-btn highlight";
@@ -436,34 +445,28 @@
             document.getElementById('status-board').className = 'warning';
          }
       } else {
-         btn10x.classList.remove('hidden');
          btn10x.disabled = true;
          btn10x.innerText = "🔒 100倍切替（ピントを合わせよ）";
          btn10x.className = "op-btn";
          
-         // フォーカスが合っていない場合の指示出し
          if (distance < targetDistance) {
-           msgBoard("【STEP 2】最初はぼんやり見えます。粗動・微動ねじを「遠ざける」方向に回し、ピントを合わせよ。");
+           msgBoard("【STEP 2】最初はぼんやり見えます。微動ねじを「遠ざける」方向に回し、はっきり見える位置を探せ。");
          } else {
            msgBoard("【STEP 2】遠ざけすぎました！ピントが合っていません。「近づける」方向にねじを回して戻してください。");
          }
          document.getElementById('status-board').className = '';
       }
-    } 
-    // ★ STEP 3 (100倍) の論理チェック
-    else if (currentStep === 3) {
+    } else if (currentStep === 3) {
       if (currentMode === 1) { 
         btn40x.classList.add('hidden');
-        if (focusDist === 0) {
-           if (posDist) {
-               msgBoard("⭕【完璧】100倍のピントが合いました！絞りを開いて明るさを調整し、合否判定を押してください。");
-               document.getElementById('status-board').className = 'success';
-           } else {
-               msgBoard("⚠️【注意】ピントは合っていますが、対象が視野から外れています！矢印ボタンで探してください。");
-               document.getElementById('status-board').className = 'warning';
-           }
+        if (focusDist === 0 && posDist) {
+           msgBoard("⭕【完璧】100倍のピントが合いました！絞りを開いて明るさを調整し、試験終了を押してください。");
+           document.getElementById('status-board').className = 'success';
+        } else if (focusDist === 0) {
+           msgBoard("⚠️【注意】ピントは合っていますが、対象が視野から外れています！矢印ボタンで探してください。");
+           document.getElementById('status-board').className = 'warning';
         } else {
-           msgBoard("⚠️【STEP 3】100倍になりピントが少しズレました。微動ねじでピントを合わせよ！(粗動ねじは免停)");
+           msgBoard("⚠️【STEP 3】100倍になりピントが少しズレました。微動ねじでピントを合わせよ！(粗動は免停)");
            document.getElementById('status-board').className = 'alert';
         }
       } else { 
@@ -477,7 +480,7 @@
               msgBoard("⭕【OK】100倍のピントが合いました！対象を「ど真ん中」にしてから、赤ボタンで400倍に切り替えよ！");
               document.getElementById('status-board').className = 'success';
            } else { 
-              msgBoard("⚠️【注意】ピントは合っていますが、対象が『ど真ん中』にありません！このまま400倍にすると…？");
+              msgBoard("⚠️【注意】ピントは合いましたが、対象が『ど真ん中』にありません！このまま400倍にすると確実に見失うぞ！");
               document.getElementById('status-board').className = 'warning';
            }
         } else {
@@ -511,7 +514,7 @@
   }
 
   function switchTo40x() {
-    if (Math.abs(slideX) > 15 || Math.abs(slideY) > 15) {
+    if (Math.abs(slideX) > 10 || Math.abs(slideY) > 10) {
       gameOver("❌【見失った！】対象を『ど真ん中』に置かずに400倍にしたため、視野外に消え去りました！"); return;
     }
 
@@ -539,12 +542,19 @@
         gameOver("❌【一発免停】覗きながら粗動ねじで近づけましたね？衝突事故です！"); return; 
     }
     
-    // ★ 警告文をより自然に修正
     if (currentStep >= 3 && type === 1) { 
         gameOver("❌【一発免停】高倍率で粗動ねじを回しましたね！？大きく動きすぎてピントを完全に見失う、またはレンズが激突する危険な操作です！"); return; 
     }
 
     distance += val;
+    
+    // ★ 各レンズのギリギリ限界ライン（crashLimits）での激突判定
+    if (distance <= crashLimits[currentLensType]) { 
+        distance = crashLimits[currentLensType]; 
+        updateStagePosition(); updateVisuals(); 
+        gameOver("❌【一発免停】ガシャン！レンズがプレパラートに衝突し破損しました！"); return; 
+    }
+
     if (distance > 50) {
        distance = 50;
        msgBoard("⚠️【警告】遠ざけすぎです。これ以上回してもピントは合いません。近づけ直してください。");
@@ -553,23 +563,22 @@
        updateVisuals();
        return;
     }
-    if (distance <= 0) { distance = 0; updateStagePosition(); updateVisuals(); gameOver("❌【一発免停】ガシャン！レンズが衝突しました！"); return; }
     
-    if (currentStep === 1 && distance <= 5) { 
+    // STEP1のクリア条件：距離12以下まで近づける（4xの限界は0なので安全）
+    if (currentStep === 1 && distance <= 12) { 
       msgBoard("⭕【OK】極限まで接近しました！「接眼レンズを覗く」に切り替えてください。");
       document.getElementById('status-board').className = 'success';
       document.getElementById('btn-eye').disabled = false;
-    } else if (currentStep === 1 && distance > 5) {
+    } else if (currentStep === 1 && distance > 12) {
       msgBoard("⚠️【STEP 1】横から見て、粗動ねじでレンズを極限まで近づけよ！");
       document.getElementById('status-board').className = '';
       document.getElementById('btn-eye').disabled = true; 
     }
 
-    // ★ STEP 4 (400倍) のメッセージロジック修正
     if (currentStep === 4) {
       if (Math.abs(distance - targetDistance) === 0) {
-         if (Math.abs(slideX) <= 15 && Math.abs(slideY) <= 15) {
-             msgBoard("⭕【完璧】400倍のピントが合いました！絞りを開いて明るさを調整し、合否判定を押してください。");
+         if (Math.abs(slideX) <= 10 && Math.abs(slideY) <= 10) {
+             msgBoard("⭕【完璧】400倍のピントが合いました！絞りを開いて明るさを調整し、試験終了を押してください。");
              document.getElementById('status-board').className = 'success';
          } else {
              msgBoard("⚠️【注意】ピントは合っていますが、対象が視野から外れています！矢印で慎重に探せ！");
@@ -589,7 +598,7 @@
   function switchView(mode) {
     if (isGameOver) return;
     if (mode === 'eye') {
-      if (currentStep === 1 && distance > 5) { alert("まだ遠すぎます！横から見て極限まで近づけて！"); return; }
+      if (currentStep === 1 && distance > 12) { alert("まだ遠すぎます！横から見て極限まで近づけて！"); return; }
       
       if (currentStep < 2) currentStep = 2; 
       
@@ -615,7 +624,8 @@
     
     const slideGroup = document.getElementById('slide-group');
     if (slideGroup) {
-      slideGroup.style.transform = `translate(${slideX}px, ${slideY}px) scale(${scale})`;
+      // ★ スケール（拡大）してから移動（ズレ）させることで、高倍率時の「少しの操作で大きく動く」シビアな操作感を完全再現
+      slideGroup.style.transform = `scale(${scale}) translate(${slideX}px, ${slideY}px)`;
       
       let blurMultiplier = 3;
       if (currentStep === 3) blurMultiplier = 6;
@@ -678,7 +688,7 @@
     const iris = document.getElementById('iris').value;
     const focusOK = Math.abs(distance - targetDistance) === 0;
     
-    const posOK = currentMode === 1 ? (Math.abs(slideX) <= 40 && Math.abs(slideY) <= 40) : (Math.abs(slideX) <= 15 && Math.abs(slideY) <= 15);
+    const posOK = currentMode === 1 ? (Math.abs(slideX) <= 40 && Math.abs(slideY) <= 40) : (Math.abs(slideX) <= 10 && Math.abs(slideY) <= 10);
     const irisOK = currentMode === 1 ? (iris >= 40 && iris <= 90) : (iris >= 80); 
     
     if (focusOK && irisOK && posOK) {
@@ -695,7 +705,7 @@
       const crownIcon = document.getElementById('crown-icon');
       
       if(currentMode === 1) {
-        licenseRank.innerText = "ブロンズ免許";
+        licenseRank.innerText = "ブロンズ認定";
         licenseCard.className = "license-card card-bronze";
         licenseRank.style.color = "#a0a0a0";
         crownIcon.innerText = "🥉";
@@ -706,12 +716,12 @@
         document.getElementById('license-time-wrap').style.display = "block";
         
         if(timeUsed <= 60) {
-          licenseRank.innerText = "特級 ゴールド免許";
+          licenseRank.innerText = "特級 ゴールド認定";
           licenseCard.className = "license-card card-gold";
           licenseRank.style.color = "#fbc02d";
           crownIcon.innerText = "👑";
         } else {
-          licenseRank.innerText = "シルバー免許";
+          licenseRank.innerText = "シルバー認定";
           licenseCard.className = "license-card card-silver";
           licenseRank.style.color = "#9e9e9e";
           crownIcon.innerText = "🥈";

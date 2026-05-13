@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>顕微鏡・操作免許センター</title>
 
+<!-- UDフォントの読み込み -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&display=swap" rel="stylesheet">
@@ -42,14 +43,17 @@
 
   #view-area { width: 100%; background: #f5f5f5; border-radius: 10px; position: relative; overflow: hidden; margin-bottom: 15px; border: 2px solid #ccc; display: flex; align-items: center; justify-content: center; transition: all 0.3s;}
   
-  #side-view { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; position: relative; min-height: 250px;}
-  #lens-wrapper { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 5; text-align: center; cursor: pointer; }
+  #side-view { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; position: relative; min-height: 250px;}
+  
+  /* ★テキストを上に逃がし、物理計算の邪魔をしない設計 */
+  #lens-wrapper { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); z-index: 5; text-align: center; cursor: pointer; }
+  .lens-guide { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: bold; color: #005bac; background: rgba(255,255,255,0.8); padding: 2px 5px; border-radius: 4px; white-space: nowrap; pointer-events: none;}
+  
   #revolver-base { width: 60px; height: 15px; background: #444; border-radius: 10px 10px 0 0; margin: 0 auto;}
   #active-lens { width: 28px; border: 2px solid #222; border-radius: 0 0 5px 5px; color: white; font-size: 12px; font-weight: bold; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; margin: 0 auto; transition: all 0.3s;}
   .lens-type-0 { height: 35px; background: #888; } .lens-type-1 { height: 55px; background: #ffcc00; color: black !important; } .lens-type-2 { height: 85px; background: #d32f2f; } 
-  .lens-guide { font-size: 12px; font-weight: bold; color: #005bac; margin-top: 5px; background: rgba(255,255,255,0.8); padding: 2px 5px; border-radius: 4px;}
 
-  #stage-obj { width: 180px; height: 12px; background: #444; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); transition: bottom 0.2s linear; }
+  #stage-obj { width: 180px; height: 12px; background: #444; position: absolute; bottom: -26.5px; left: 50%; transform: translateX(-50%); transition: bottom 0.2s linear; }
   #slide-obj { width: 80px; height: 6px; background: rgba(180, 230, 255, 0.6); border: 1px solid #005bac; position: absolute; top: -7px; left: 50px; opacity: 0; transition: opacity 0.3s; }
   .slide-set { opacity: 1 !important; }
   
@@ -89,15 +93,12 @@
   /* =========================================
      ★ 全デバイス・レスポンシブ最適化
      ========================================= */
-
-  /* 1. ベース（スマホ縦画面） */
   #app-container { max-width: 600px; }
   .simulator-layout { display: flex; flex-direction: column; gap: 15px; }
   .simulator-layout > .left-col, .simulator-layout > .right-col { width: 100%; }
   #view-area { height: 320px; }
   #eyepiece-circle { width: 280px; height: 280px; }
 
-  /* 2. タブレット縦画面 (iPad Portrait) */
   @media (min-width: 768px) and (orientation: portrait) {
     #app-container { max-width: 720px; padding: 30px; }
     h1 { font-size: 26px; }
@@ -106,19 +107,16 @@
     .op-btn { font-size: 16px; padding: 12px 5px; }
   }
 
-  /* 3. タブレット＆PC 横画面 (iPad/PC Landscape) */
   @media (min-width: 768px) and (orientation: landscape) and (min-height: 501px) {
     #app-container { max-width: 1000px; padding: 25px; }
     .simulator-layout { flex-direction: row; align-items: stretch; }
     .simulator-layout > .left-col { flex: 1.2; min-width: 0; }
-    /* 右の操作パネルは独立スクロール可能に */
     .simulator-layout > .right-col { flex: 1; min-width: 320px; display: flex; flex-direction: column; overflow-y: auto; max-height: 550px; padding-right: 10px; }
     #view-area { margin-bottom: 0; height: 100%; min-height: 450px; }
     #eyepiece-circle { width: 360px; height: 360px; }
     h1 { font-size: 24px; }
   }
 
-  /* 4. PC 大画面 (Large Desktop) */
   @media (min-width: 1200px) and (orientation: landscape) {
     #app-container { max-width: 1100px; padding: 30px; }
     .simulator-layout > .left-col { flex: 1.5; }
@@ -127,7 +125,6 @@
     .simulator-layout > .right-col { max-height: 600px; }
   }
 
-  /* 5. スマホ横画面 (iPhone Landscape) */
   @media (orientation: landscape) and (max-height: 500px) {
     body { padding: 5px; padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
     #app-container { max-width: 100% !important; padding: 10px; }
@@ -222,15 +219,20 @@
       <div class="left-col">
         <div id="view-area">
           <div id="side-view">
-            <div id="lens-wrapper" onclick="rotateLens()">
-              <div id="revolver-base"></div>
-              <div id="active-lens" class="lens-type-1">10x</div>
-              <div class="lens-guide">🔄 クリックで回転</div>
+            <!-- ★ 全デバイスで距離の比率を完全に固定する絶対コンテナ（高さ240px） -->
+            <div style="position: relative; width: 100%; max-width: 250px; height: 240px; margin: auto;">
+              <div id="lens-wrapper" onclick="rotateLens()">
+                <!-- 文字を上に逃がし、物理的な接触を防ぐ -->
+                <div class="lens-guide">🔄 クリックで回転</div>
+                <div id="revolver-base"></div>
+                <div id="active-lens" class="lens-type-1">10x</div>
+              </div>
+              <div id="stage-obj"><div id="slide-obj"></div></div>
             </div>
-            <div id="stage-obj"><div id="slide-obj"></div></div>
           </div>
           <div id="eye-view">
             <div id="eyepiece-circle">
+              <!-- SVGを包むレイヤー -->
               <div id="slide-group" style="position:absolute; width:100%; height:100%; transition: transform 0.3s, filter 0.3s; transform-origin: center;"></div>
             </div>
           </div>
@@ -342,8 +344,9 @@
   let isSlideSet = false, isGameOver = false, currentStep = 0;
   let timeLeft = 180, timerId = null;
   
-  // ★ 超シビアなレンズ激突限界設定（targetDistance=15 に対して）
-  const crashLimits = [0, 8, 13]; // 4xは0, 10xは8, 40xは13
+  // ★ 超シビアなレンズ激突限界設定
+  // 4x=0(接触), 10x=5(衝突), 40x=14(衝突)
+  const crashLimits = [0, 5, 14]; 
   
   const quizzes = [
     { q: "倍率を上げる前に行うことは？", a: ["対象を視野の中央にする", "絞りを閉じる"], c: 0 },
@@ -434,7 +437,8 @@
   }
 
   function updateStagePosition() {
-    const stagePos = 10 + (50 - distance) * 2.8; 
+    // ★ PCやiPadで縦に間延びしないための絶対的計算式
+    const stagePos = -26.5 + (50 - distance) * 3.5; 
     document.getElementById('stage-obj').style.bottom = stagePos + "px";
   }
 
@@ -520,7 +524,7 @@
   function switchView(mode) {
     if (isGameOver) return;
     if (mode === 'eye') {
-      if (currentStep === 1 && distance > 12) { alert("まだ遠すぎます！横から見て極限まで近づけて！"); return; }
+      if (currentStep === 1 && distance > 5) { alert("まだ遠すぎます！横から見て極限まで近づけて！"); return; }
       
       if (currentStep < 2) currentStep = 2; 
       
@@ -555,7 +559,7 @@
       document.getElementById('status-board').className = '';
     } 
     else if (currentStep === 1) {
-      if (distance <= 12) { 
+      if (distance <= 5) { 
         msgBoard("⭕【OK】極限まで接近しました！「接眼レンズを覗く」に切り替えてください。");
         document.getElementById('status-board').className = 'success';
         document.getElementById('btn-eye').disabled = false;
@@ -566,7 +570,7 @@
       }
     } 
     else if (currentStep === 2) {
-      if (!isEyeView) return; // 覗いていない時はメッセージ更新保留
+      if (!isEyeView) return; 
       btn10x.classList.remove('hidden');
       if (focusDist <= 1) { 
          btn10x.disabled = false;

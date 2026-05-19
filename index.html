@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>顕微鏡・操作免許センター</title>
 
-<!-- UDフォントの読み込み -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&display=swap" rel="stylesheet">
@@ -22,15 +21,17 @@
   #app-container { 
     margin: 0 auto; background: white; padding: 20px; border-radius: 12px; 
     box-shadow: 0 4px 20px rgba(0,0,0,0.15); border: 2px solid #d0d0d0; transition: all 0.3s;
+    position: relative;
   }
-  h1 { font-size: 22px; border-bottom: 3px solid #005bac; padding-bottom: 10px; margin-top: 0;}
+  h1 { font-size: 22px; border-bottom: 3px solid #005bac; padding-bottom: 10px; margin-top: 0; display: flex; align-items: baseline; justify-content: space-between;}
+  .version-badge { font-size: 12px; color: #666; font-weight: normal; background: #eee; padding: 2px 8px; border-radius: 12px; }
 
   button { touch-action: manipulation; }
 
   .menu-btn { display: block; width: 100%; padding: 16px; margin-bottom: 15px; font-size: 18px; font-weight: bold; font-family: inherit; border-radius: 10px; border: none; cursor: pointer; color: white; transition: 0.2s; }
   .menu-btn:hover { filter: brightness(1.1); transform: scale(1.02); }
   #btn-mode1 { background: #005bac; } #btn-mode2 { background: #ff8c00; } #btn-mode3 { background: #555555; } #btn-tutorial { background: #4caf50; }
-  .hidden { display: none !important; }
+  .hidden { display: none !important; opacity: 0; pointer-events: none; }
   
   #timer-board { font-size: 22px; color: #d32f2f; font-weight: bold; margin-bottom: 10px; background: #ffebee; padding: 8px; border-radius: 8px; border: 2px solid #ef5350; text-align: center;}
   
@@ -47,7 +48,7 @@
   
   /* ★テキストを上に逃がし、物理計算の邪魔をしない設計 */
   #lens-wrapper { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); z-index: 5; text-align: center; cursor: pointer; }
-  .lens-guide { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: bold; color: #005bac; background: rgba(255,255,255,0.8); padding: 2px 5px; border-radius: 4px; white-space: nowrap; pointer-events: none;}
+  .lens-guide { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: bold; color: #005bac; background: rgba(255,255,255,0.8); padding: 2px 5px; border-radius: 4px; white-space: nowrap; transition: opacity 0.3s;}
   
   #revolver-base { width: 60px; height: 15px; background: #444; border-radius: 10px 10px 0 0; margin: 0 auto;}
   #active-lens { width: 28px; border: 2px solid #222; border-radius: 0 0 5px 5px; color: white; font-size: 12px; font-weight: bold; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; margin: 0 auto; transition: all 0.3s;}
@@ -89,6 +90,8 @@
   @keyframes rainbow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
   .confetti { position: absolute; font-size: 24px; animation: fall 3s infinite linear; z-index: 1;}
   @keyframes fall { 0% { transform: translateY(-50px) rotate(0deg); opacity: 1;} 100% { transform: translateY(150vh) rotate(360deg); opacity: 0;} }
+
+  .version-footer { text-align: right; font-size: 11px; color: #999; margin-top: 15px; border-top: 1px dashed #eee; padding-top: 5px; }
 
   /* =========================================
      ★ 全デバイス・レスポンシブ最適化
@@ -145,7 +148,7 @@
 <body>
 
 <div id="app-container">
-  <h1>🔬 顕微鏡・操作免許センター</h1>
+  <h1><span>🔬 顕微鏡・操作免許センター</span> <span class="version-badge">v2.0.1</span></h1>
   
   <div id="menu-screen">
     <button class="menu-btn" id="btn-tutorial" onclick="startTutorial()">🔰 操作チュートリアルを読む</button>
@@ -219,11 +222,9 @@
       <div class="left-col">
         <div id="view-area">
           <div id="side-view">
-            <!-- ★ 全デバイスで距離の比率を完全に固定する絶対コンテナ（高さ240px） -->
             <div style="position: relative; width: 100%; max-width: 250px; height: 240px; margin: auto;">
               <div id="lens-wrapper" onclick="rotateLens()">
-                <!-- 文字を上に逃がし、物理的な接触を防ぐ -->
-                <div class="lens-guide">🔄 クリックで回転</div>
+                <div class="lens-guide" id="lens-guide-text">🔄 クリックで回転</div>
                 <div id="revolver-base"></div>
                 <div id="active-lens" class="lens-type-1">10x</div>
               </div>
@@ -232,7 +233,6 @@
           </div>
           <div id="eye-view">
             <div id="eyepiece-circle">
-              <!-- SVGを包むレイヤー -->
               <div id="slide-group" style="position:absolute; width:100%; height:100%; transition: transform 0.3s, filter 0.3s; transform-origin: center;"></div>
             </div>
           </div>
@@ -289,6 +289,8 @@
       </div>
     </div>
   </div>
+  
+  <div class="version-footer">Ver 2.0.1 / AI伴走モデル対応安定版</div>
 </div>
 
 <script>
@@ -429,6 +431,9 @@
     if (currentLensType !== 0) { alert("⚠️ 最初の観察は「一番短い4xレンズ」で行うのが鉄則です！"); return; }
     
     currentStep = 1;
+    // ★ 準備完了後、回転ガイドの文字を非表示にしてUIをスッキリさせる
+    document.getElementById('lens-guide-text').classList.add('hidden');
+    
     document.getElementById('panel-prep').classList.add('hidden');
     document.getElementById('panel-main').classList.remove('hidden');
     updateStagePosition();
@@ -437,7 +442,6 @@
   }
 
   function updateStagePosition() {
-    // ★ PCやiPadで縦に間延びしないための絶対的計算式
     const stagePos = -26.5 + (50 - distance) * 3.5; 
     document.getElementById('stage-obj').style.bottom = stagePos + "px";
   }
@@ -542,7 +546,6 @@
     updateGameState();
   }
 
-  // ★ UI状態とメッセージを100%管理するセントラル制御システム
   function updateGameState() {
     if (isGameOver) return;
     
